@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<title>Comparateur Luxembourg</title>
+<meta name="theme-color" content="#141d33">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Comparateur LU">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{
+  --bg:#141d33;
+  --bg2:#1a2540;
+  --card:#1e2d4a;
+  --card2:#24345480;
+  --line:#2f4166;
+  --txt:#e8eef8;
+  --dim:#93a4c4;
+  --accent:#f5a623;
+  --c-action:#4ade80;
+  --c-etf:#fb7c4e;
+  --c-oblig:#60a5fa;
+  --c-av:#b98cf5;
+  --c-pv:#f5a623;
+  --ok:#4ade80;
+  --bad:#f87171;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:15px;line-height:1.45;
+  padding-bottom:calc(40px + env(safe-area-inset-bottom));
+}
+/* ---------- HEADER ---------- */
+header{
+  position:sticky;top:0;z-index:50;
+  background:var(--bg);
+  border-bottom:3px solid var(--accent);
+  padding:calc(10px + env(safe-area-inset-top)) 12px 10px;
+}
+.brand{display:flex;align-items:center;gap:11px;margin-bottom:10px}
+.logo{
+  width:44px;height:44px;border-radius:11px;flex:0 0 44px;
+  background:var(--card);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;
+}
+.logo svg{width:26px;height:26px}
+.brand h1{
+  margin:0;font-size:22px;letter-spacing:1.5px;font-weight:800;
+  color:var(--accent);text-transform:uppercase;line-height:1.1;
+}
+.brand p{margin:2px 0 0;font-size:12px;color:var(--dim)}
+.slider-row{
+  background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:9px 13px;margin-bottom:8px;
+  display:flex;align-items:center;gap:11px;
+}
+.slider-row label{
+  font-size:11px;letter-spacing:1px;font-weight:700;color:var(--dim);
+  text-transform:uppercase;white-space:nowrap;
+}
+.slider-row input[type=range]{flex:1;min-width:0;accent-color:var(--accent);height:22px}
+.slider-row .val{
+  font-size:18px;font-weight:800;color:var(--accent);
+  white-space:nowrap;min-width:66px;text-align:right;
+}
+.menages{display:flex;gap:6px;margin-bottom:8px;overflow-x:auto}
+.menages::-webkit-scrollbar{display:none}
+.menages .add{flex:0 0 auto;min-width:44px;font-size:18px;line-height:1}
+.menages .mg{
+  flex:1 0 auto;white-space:nowrap;background:var(--card);border:1px solid var(--line);color:var(--dim);
+  border-radius:10px;padding:9px;font-size:13px;font-weight:700;font-family:inherit;
+}
+.menages .mg.on{background:var(--accent);border-color:var(--accent);color:#141d33}
+.pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+.pills::-webkit-scrollbar{display:none}
+.pill{
+  flex:1 0 auto;min-width:92px;
+  background:var(--card);border:1px solid var(--line);border-radius:10px;
+  border-top:3px solid var(--dim);
+  padding:7px 9px;text-align:center;
+}
+.pill{cursor:pointer;transition:transform .12s,border-color .12s}
+.pill:active{transform:scale(.95)}
+.pill.on{background:#26385c}
+.pill .n{font-size:10px;letter-spacing:.8px;font-weight:700;text-transform:uppercase;line-height:1.2}
+.pill .v{font-size:17px;font-weight:800;margin-top:2px}
+/* ---------- LAYOUT ---------- */
+main{padding:14px 12px 0}
+.note{
+  background:var(--card);border-left:4px solid var(--accent);border-radius:10px;
+  padding:12px 14px;margin-bottom:14px;font-size:13.5px;color:#cfdaef;
+}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:14px;
+  border-top:4px solid var(--accent);
+  margin-bottom:14px;overflow:hidden;
+}
+.card>h2{
+  margin:0;padding:14px 15px;font-size:17px;font-weight:800;
+  letter-spacing:1px;text-transform:uppercase;color:var(--accent);
+  border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+}
+.card>h2 .sub{font-size:11px;font-weight:600;letter-spacing:0;color:var(--dim);text-transform:none}
+.body{padding:13px 15px 16px}
+.sect{
+  font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;
+  margin:16px 0 9px;padding-left:9px;border-left:3px solid var(--accent);
+}
+.sect:first-child{margin-top:2px}
+.field{margin-bottom:11px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:#c3d0e6;margin-bottom:5px}
+.wrap{position:relative}
+.wrap input,.wrap select{
+  width:100%;background:#16203a;border:1px solid var(--line);border-radius:9px;
+  color:var(--txt);font-size:16px;padding:11px 40px 11px 13px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  -webkit-appearance:none;appearance:none;
+}
+.wrap select{font-family:inherit;font-size:14px;padding-right:32px}
+.wrap input:focus,.wrap select:focus{outline:none;border-color:var(--accent)}
+.unit{
+  position:absolute;right:13px;top:50%;transform:translateY(-50%);
+  color:var(--dim);font-size:14px;pointer-events:none;
+}
+.hint{font-size:12px;color:var(--dim);font-style:italic;margin:6px 2px 0;line-height:1.4}
+.rowsplit{border-top:1px dashed var(--line);margin:11px 0}
+.res{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.line{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:13.5px}
+.line span:first-child{color:var(--dim)}
+.line span:last-child{font-weight:700;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;text-align:right}
+.line.big{font-size:16px;padding-top:9px;margin-top:5px;border-top:1px solid var(--line)}
+.line.big span:last-child{font-size:19px;font-weight:800;color:var(--accent)}
+.tag{
+  display:inline-block;font-size:11px;font-weight:700;border-radius:20px;
+  padding:3px 10px;margin-top:8px;
+}
+.tag.ok{background:rgba(74,222,128,.15);color:var(--ok)}
+.tag.bad{background:rgba(248,113,113,.15);color:var(--bad)}
+.tag.neutral{background:rgba(147,164,196,.15);color:var(--dim)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+th,td{padding:7px 5px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+td.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+tr.win td{color:var(--accent);font-weight:800}
+.chart{margin-top:14px}
+.chart svg{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:9px;margin-top:9px;font-size:11.5px;color:var(--dim)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+button.reset{
+  width:100%;background:transparent;border:1px solid var(--line);color:var(--dim);
+  border-radius:10px;padding:12px;font-size:14px;font-weight:600;margin:4px 0 22px;
+}
+footer{padding:0 12px 30px;font-size:11.5px;color:var(--dim);line-height:1.55}
+footer a{color:var(--dim)}
+/* update banner */
+#upd{
+  display:none;position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));
+  background:var(--accent);color:#141d33;border-radius:12px;padding:11px 14px;
+  align-items:center;justify-content:space-between;gap:10px;font-weight:700;font-size:14px;z-index:99;
+}
+#upd button{background:#141d33;color:var(--accent);border:0;border-radius:8px;padding:8px 14px;font-weight:700}
+.off{display:none;font-size:11px;background:rgba(248,113,113,.18);color:var(--bad);border-radius:20px;padding:2px 9px;font-weight:700}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 17l5-5 4 3 7-8"/><path d="M15 7h4v4"/>
+      </svg>
+    </div>
+    <div style="flex:1;min-width:0">
+      <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
+      <p>7 poches · touchez une pastille pour ouvrir la rubrique</p>
+    </div>
+    <span class="off" id="offBadge">hors ligne</span>
+  </div>
+
+  <div class="slider-row">
+    <label>Durée</label>
+    <input type="range" id="duree" min="1" max="40" step="1" value="15">
+    <span class="val"><span id="dureeV">15</span> ans</span>
+  </div>
+  <div class="slider-row">
+    <label>Actualisation</label>
+    <input type="range" id="actu" min="0" max="8" step="0.1" value="2">
+    <span class="val"><span id="actuV">2,0</span> %</span>
+  </div>
+
+  <div class="menages" id="menages"></div>
+  <div class="pills" id="pills"></div>
+</header>
+
+<main>
+
+<div class="note">
+  Au Luxembourg l'impôt est <b>progressif</b> : commence par le <b>profil fiscal</b> ci-dessous, il alimente
+  tous les autres modules. Les plus-values sur titres détenus <b>plus de 6 mois</b> sont exonérées — c'est
+  le paramètre qui change tout par rapport à la France.
+</div>
+
+<!-- ============ PROFIL FISCAL ============ -->
+<div class="card" style="border-top-color:#93a4c4">
+  <h2 style="color:#c3d0e6">Profil fiscal <span class="sub">barème 2026</span></h2>
+  <div class="body">
+    <div class="field">
+      <label>Nom du ménage</label>
+      <div class="wrap"><input type="text" id="p_nom"><span class="unit">✎</span></div>
+    </div>
+    <div class="field">
+      <label>Revenu imposable ajusté (hors placements)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="p_revenu"><span class="unit">€</span></div>
+    </div>
+    <div class="field">
+      <label>Classe d'impôt</label>
+      <div class="wrap"><select id="p_classe">
+        <option value="2">Classe 2 — marié / partenaire (splitting)</option>
+        <option value="1">Classe 1 — célibataire / imposition individuelle</option>
+        <option value="1a">Classe 1a — parent isolé, veuf, 65 ans+</option>
+      </select><span class="unit">▾</span></div>
+    </div>
+    <div class="field">
+      <label>Âge du plus jeune conjoint (plafond épargne-logement)</label>
+      <div class="wrap"><input type="text" inputmode="numeric" id="p_age"><span class="unit">ans</span></div>
+    </div>
+    <div class="field">
+      <label>Enfants à charge dans le ménage</label>
+      <div class="wrap"><input type="text" inputmode="numeric" id="p_enfants"><span class="unit">enf.</span></div>
+    </div>
+    <button class="reset" id="delMg" style="margin:2px 0 14px;border-color:#f87171;color:#f87171">Supprimer ce ménage</button>
+    <div class="hint" style="margin-bottom:6px">
+      <b>Les enfants ne modifient pas le barème.</b> Depuis la réforme de 2008 le nombre d'enfants ne
+      figure plus sur la fiche de retenue et ne change ni la classe ni le taux : la modération d'impôt
+      pour enfant est versée en dehors de l'impôt, sous forme d'allocation familiale par la Caisse pour
+      l'avenir des enfants (jusqu'à 922,50 €/enfant/an en équivalent). Ils jouent en revanche sur deux
+      points repris dans l'app : le plafond de l'article 111 (672 € par membre du ménage, enfants
+      compris) et, indirectement, les frais de garde déductibles — à intégrer dans le revenu imposable
+      ajusté saisi ci-dessus.
+    </div>
+    <div class="field">
+      <label>Contribution dépendance (CADEP 1,4 %)</label>
+      <div class="wrap"><select id="p_cadep">
+        <option value="1">Oui — affilié à l'assurance dépendance</option>
+        <option value="0">Non</option>
+      </select><span class="unit">▾</span></div>
+    </div>
+
+    <div class="res">
+      <div class="line"><span>Composition du ménage</span><span id="r_menage">—</span></div>
+      <div class="line"><span>Plafond assurances art. 111</span><span id="r_pl111">—</span></div>
+      <div class="line"><span>Plafond épargne-logement</span><span id="r_plBaus">—</span></div>
+      <div class="line"><span>Plafond prévoyance 111bis</span><span id="r_pl111bis">—</span></div>
+      <div class="rowsplit"></div>
+      <div class="line"><span>Impôt barème</span><span id="r_impotBase">—</span></div>
+      <div class="line"><span>Contribution fonds pour l'emploi</span><span id="r_fpe">—</span></div>
+      <div class="line"><span>Impôt total</span><span id="r_impotTot">—</span></div>
+      <div class="line"><span>Taux moyen global</span><span id="r_tauxMoyen">—</span></div>
+      <div class="line big"><span>Taux marginal (TMI + fonds emploi)</span><span id="r_tmi">—</span></div>
+    </div>
+    <div class="hint">
+      Les plafonds ci-dessus se recalculent seuls dès que vous changez le nombre d'enfants ou l'âge.
+      Barème 2026 à 23 tranches (0 % jusqu'à 13 230 €, 42 % au-delà de 234 870 €) issu de la réforme
+      fiscale 2025, majoré de la contribution au fonds pour l'emploi (7 %, ou 9 % au-delà de 150 000 € en
+      classe 1/1a et 300 000 € en classe 2). Les crédits d'impôt (CIS, CISSM, monoparental) et les
+      abattements propres à la classe 1a ne sont pas modélisés.
+    </div>
+  </div>
+</div>
+
+
+<!-- ============ ALLOCATION & LIQUIDITÉ ============ -->
+<div class="card">
+  <h2>Allocation &amp; liquidité <span class="sub">synthèse des 7 poches</span></h2>
+  <div class="body">
+    <button class="reset" id="typeBtn" style="margin:0 0 14px;border-color:var(--accent);color:var(--accent)">
+      Appliquer une répartition type
+    </button>
+    <table id="alloc">
+      <thead><tr><th>Poche</th><th>€/mois</th><th>Part</th><th>Disponibilité</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="res">
+      <div class="line"><span>Effort d'épargne mensuel total</span><span id="al_total">—</span></div>
+      <div class="line"><span>Disponible sous quelques jours</span><span id="al_liq">—</span></div>
+      <div class="line"><span>Bloqué jusqu'à 60 ans (111bis)</span><span id="al_bloc">—</span></div>
+    </div>
+    <div id="al_bar" style="margin-top:12px"></div>
+    <div class="hint" style="margin-top:12px">
+      Règle de bon sens avant toute optimisation fiscale : garder 3 à 6 mois de dépenses courantes sur un
+      compte d'épargne immédiatement disponible. Le 111bis ne devrait venir qu'après, et à hauteur du
+      plafond déductible — au-delà, on bloque de l'argent jusqu'à 60 ans sans contrepartie fiscale.
+    </div>
+  </div>
+</div>
+
+<!-- ============ COMPTE D'ÉPARGNE ============ -->
+<div class="card" id="card-epargne" style="border-top-color:#5eead4">
+  <h2 style="color:#5eead4">Compte d'épargne <span class="sub">la réserve liquide</span></h2>
+  <div class="body">
+    <div class="field"><label>Capital initial</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="c_init"><span class="unit">€</span></div></div>
+    <div class="field"><label>Versement mensuel</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="c_mens"><span class="unit">€</span></div></div>
+    <div class="field"><label>Taux d'intérêt annuel</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="c_taux"><span class="unit">%</span></div></div>
+    <div class="hint">
+      Il n'existe pas d'équivalent luxembourgeois du Livret A : ni plafond, ni taux garanti par l'État,
+      ni exonération. Ce sont de simples comptes d'épargne bancaires, dont les intérêts subissent la
+      RELIBI de 20 % au-delà de 250 € par an et par agent payeur. Le rendement réel est donc
+      généralement négatif après inflation — cette poche sert à la sécurité, pas au rendement.
+    </div>
+    <div class="res" id="res_c"></div>
+  </div>
+</div>
+
+<!-- ============ ÉPARGNE-LOGEMENT ============ -->
+<div class="card" id="card-bauspar" style="border-top-color:#f472b6">
+  <h2 style="color:#f472b6">Épargne-logement <span class="sub">Bausparen — art. 111 al. 1 c)</span></h2>
+  <div class="body">
+    <div class="field"><label>Cotisation annuelle</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="l_cotis"><span class="unit">€</span></div></div>
+    <div class="field"><label>Rendement annuel du contrat</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="l_rend"><span class="unit">%</span></div></div>
+    <div class="field"><label>Économie d'impôt réinvestie</label>
+      <div class="wrap"><select id="l_reinv"><option value="1">Oui</option><option value="0">Non</option></select><span class="unit">▾</span></div></div>
+    <div class="line" style="padding:2px 0 10px"><span>Plafond déductible du ménage</span><span id="l_plafondAff">—</span></div>
+    <div class="hint">
+      Plafond de <b>1 344 €</b> par membre du ménage si le plus jeune conjoint a moins de 41 ans au 1ᵉʳ
+      janvier, <b>672 €</b> sinon — conjoint et enfants comptent chacun pour une part. Ce plafond est
+      <i>distinct</i> de celui de l'article 111 pour les assurances, il ne se confond pas avec lui.
+      Contrainte : les fonds doivent financer le logement personnel (achat, construction, rénovation),
+      et un contrat souscrit moins de 10 ans avant d'être affecté à autre chose déclenche une imposition
+      rectificative. Seules des caisses d'épargne-logement agréées y ouvrent droit — un PEL français ou
+      belge n'est pas déductible.
+    </div>
+    <div class="res" id="res_l"></div>
+  </div>
+</div>
+
+<!-- ============ ACTION ============ -->
+<div class="card" id="card-action" style="border-top-color:var(--c-action)">
+  <h2 style="color:var(--c-action)">Action <span class="sub">compte-titres, dividendes distribués</span></h2>
+  <div class="body">
+    <div class="sect" style="border-left-color:var(--c-action)">Investissement</div>
+    <div class="field"><label>Capital initial</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="a_init"><span class="unit">€</span></div></div>
+    <div class="field"><label>Versement mensuel</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="a_mens"><span class="unit">€</span></div></div>
+    <div class="field"><label>Appréciation annuelle du cours</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="a_croiss"><span class="unit">%</span></div></div>
+    <div class="field"><label>Rendement du dividende (brut)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="a_div"><span class="unit">%</span></div></div>
+    <div class="field"><label>Frais annuels (droits de garde, courtage lissé)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="a_frais"><span class="unit">%</span></div></div>
+
+    <div class="sect" style="border-left-color:var(--c-action)">Fiscalité luxembourgeoise</div>
+    <div class="field"><label>Dividendes qualifiants (exonération de moitié)</label>
+      <div class="wrap"><select id="a_qual">
+        <option value="1">Oui — société LU / UE / pays conventionné</option>
+        <option value="0">Non — imposition sur 100 %</option>
+      </select><span class="unit">▾</span></div></div>
+    <div class="field"><label>Retenue à la source sur dividendes (créditable)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="a_ras"><span class="unit">%</span></div></div>
+    <div class="field"><label>Part du portefeuille revendue avant 6 mois</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="a_spec"><span class="unit">%</span></div></div>
+    <div class="hint">
+      Plus-value exonérée au-delà de 6 mois de détention (sauf participation importante &gt; 10 %).
+      La part revendue avant 6 mois est un bénéfice de spéculation imposé au barème, exonéré s'il reste
+      sous 500 €/an. Abattement sur revenus de capitaux mobiliers : 1 500 € (3 000 € en classe 2).
+    </div>
+
+    <div class="res" id="res_a"></div>
+  </div>
+</div>
+
+<!-- ============ ETF ============ -->
+<div class="card" id="card-etf" style="border-top-color:var(--c-etf)">
+  <h2 style="color:var(--c-etf)">ETF <span class="sub">capitalisant ou distribuant</span></h2>
+  <div class="body">
+    <div class="sect" style="border-left-color:var(--c-etf)">Investissement</div>
+    <div class="field"><label>Capital initial</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="e_init"><span class="unit">€</span></div></div>
+    <div class="field"><label>Versement mensuel</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="e_mens"><span class="unit">€</span></div></div>
+    <div class="field"><label>Performance annuelle brute (dividendes inclus)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="e_perf"><span class="unit">%</span></div></div>
+    <div class="field"><label>Frais courants du fonds (TER)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="e_ter"><span class="unit">%</span></div></div>
+    <div class="field"><label>Droits de garde annuels</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="e_garde"><span class="unit">%</span></div></div>
+
+    <div class="sect" style="border-left-color:var(--c-etf)">Fiscalité luxembourgeoise</div>
+    <div class="field"><label>Politique de distribution</label>
+      <div class="wrap"><select id="e_type">
+        <option value="cap">Capitalisant — aucun revenu distribué</option>
+        <option value="dist">Distribuant — dividendes annuels imposables</option>
+      </select><span class="unit">▾</span></div></div>
+    <div class="field" id="e_divwrap"><label>Part de la performance distribuée</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="e_divpart"><span class="unit">%</span></div></div>
+    <div class="field"><label>Part revendue avant 6 mois</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="e_spec"><span class="unit">%</span></div></div>
+    <div class="hint">
+      C'est ici que le régime luxembourgeois est le plus favorable : un ETF <b>capitalisant</b> conservé
+      plus de 6 mois ne génère ni revenu imposable pendant la phase d'épargne, ni impôt sur la plus-value
+      à la revente. Les distributions d'un ETF, elles, sont des revenus de capitaux mobiliers imposés au
+      barème (l'exonération de moitié réservée aux dividendes de sociétés de capitaux ne leur est en
+      principe pas applicable — d'où l'absence d'option ici).
+    </div>
+
+    <div class="res" id="res_e"></div>
+  </div>
+</div>
+
+<!-- ============ OBLIGATION ============ -->
+<div class="card" id="card-obligation" style="border-top-color:var(--c-oblig)">
+  <h2 style="color:var(--c-oblig)">Obligation <span class="sub">coupons &amp; RELIBI</span></h2>
+  <div class="body">
+    <div class="sect" style="border-left-color:var(--c-oblig)">Investissement</div>
+    <div class="field"><label>Capital initial</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="o_init"><span class="unit">€</span></div></div>
+    <div class="field"><label>Versement mensuel</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="o_mens"><span class="unit">€</span></div></div>
+    <div class="field"><label>Coupon annuel</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="o_coupon"><span class="unit">%</span></div></div>
+    <div class="field"><label>Frais annuels</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="o_frais"><span class="unit">%</span></div></div>
+
+    <div class="sect" style="border-left-color:var(--c-oblig)">Fiscalité luxembourgeoise</div>
+    <div class="field"><label>Régime des intérêts</label>
+      <div class="wrap"><select id="o_regime">
+        <option value="relibi">RELIBI 20 % libératoire — agent payeur luxembourgeois</option>
+        <option value="bareme">Barème progressif — agent payeur hors Luxembourg</option>
+      </select><span class="unit">▾</span></div></div>
+    <div class="hint">
+      RELIBI : retenue libératoire de 20 % sur les intérêts versés à un résident par un agent payeur
+      luxembourgeois, avec une franchise de 250 € par an et par agent payeur. Libératoire signifie que
+      ces intérêts ne sont ni redéclarés ni soumis au barème. Hors agent payeur luxembourgeois, les
+      intérêts entrent dans le barème progressif (avec l'abattement RCM de 1 500 € / 3 000 €).
+    </div>
+
+    <div class="res" id="res_o"></div>
+  </div>
+</div>
+
+<!-- ============ ASSURANCE-VIE ============ -->
+<div class="card" id="card-av" style="border-top-color:var(--c-av)">
+  <h2 style="color:var(--c-av)">Assurance-vie classique <span class="sub">art. 111 — capital disponible</span></h2>
+  <div class="body">
+    <div class="sect" style="border-left-color:var(--c-av)">Contrat</div>
+    <div class="field"><label>Versement initial</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="v_init"><span class="unit">€</span></div></div>
+    <div class="field"><label>Versement mensuel</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="v_mens"><span class="unit">€</span></div></div>
+    <div class="field"><label>Rendement annuel brut</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="v_rend"><span class="unit">%</span></div></div>
+    <div class="field"><label>Frais de gestion annuels</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="v_gestion"><span class="unit">%</span></div></div>
+    <div class="field"><label>Frais d'entrée sur versements</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="v_entree"><span class="unit">%</span></div></div>
+
+    <div class="sect" style="border-left-color:var(--c-av)">Déduction art. 111 L.I.R.</div>
+    <div class="field"><label>Prime annuelle déductible retenue</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="v_prime"><span class="unit">€</span></div></div>
+    <div class="line" style="padding:2px 0 10px"><span>Plafond art. 111 du ménage</span><span id="v_plafondAff">—</span></div>
+    <div class="field"><label>Économie d'impôt réinvestie dans le contrat</label>
+      <div class="wrap"><select id="v_reinv"><option value="1">Oui</option><option value="0">Non</option></select><span class="unit">▾</span></div></div>
+    <div class="hint">
+      <b>C'est le contrat « libre » : aucun blocage, aucun âge de sortie imposé, capital disponible à
+      tout moment.</b> Le Luxembourg ne taxe ni les primes, ni les gains lors du rachat ou de l'échéance,
+      ni le capital décès — la sortie est fiscalement neutre pour un résident, sans clause de reprise.
+      La contrepartie : l'avantage à l'entrée est modeste. Le plafond de 672 € par membre du ménage
+      (conjoint et enfants compris) est <i>partagé</i> avec les primes RC, santé et les intérêts de prêts
+      à la consommation, et suppose un contrat à versements périodiques d'au moins 10 ans.
+    </div>
+
+    <div class="res" id="res_v"></div>
+  </div>
+</div>
+
+<!-- ============ 111bis ============ -->
+<div class="card" id="card-pv" style="border-top-color:var(--c-pv)">
+  <h2>Prévoyance-vieillesse <span class="sub">art. 111bis — 3ᵉ pilier</span></h2>
+  <div class="body">
+    <div class="sect">Contrat</div>
+    <div class="field"><label>Versement annuel</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="b_versement"><span class="unit">€</span></div></div>
+    <div class="line" style="padding:2px 0 10px"><span>Plafond déductible du ménage</span><span id="b_plafondAff">—</span></div>
+    <div class="field"><label>Nombre de contrats dans le couple</label>
+      <div class="wrap"><select id="b_contrats">
+        <option value="2">2 — un contrat chacun (plafond doublé)</option>
+        <option value="1">1 — un seul contrat</option>
+      </select><span class="unit">▾</span></div></div>
+    <div class="field"><label>Rendement annuel net de frais</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="b_rend"><span class="unit">%</span></div></div>
+    <div class="field"><label>Économie d'impôt réinvestie</label>
+      <div class="wrap"><select id="b_reinv"><option value="1">Oui — replacée au même rendement</option><option value="0">Non — consommée</option></select><span class="unit">▾</span></div></div>
+    <div class="field"><label>Mode de sortie</label>
+      <div class="wrap"><select id="b_sortie">
+        <option value="capital">Échéance normale, capital — demi-taux global</option>
+        <option value="rente">Échéance normale, rente viagère — imposable pour moitié</option>
+        <option value="anticipe">Rachat anticipé non autorisé — tarif normal plein</option>
+      </select><span class="unit">▾</span></div></div>
+    <div class="hint">
+      Depuis le 1ᵉʳ janvier 2026 le plafond est de <b>4 500 €</b> par contribuable et par an (contre
+      3 200 € jusqu'en 2025), soit 9 000 € pour un couple ayant chacun son contrat. Contraintes :
+      durée minimale de 10 ans, souscription avant 65 ans, capital récupérable uniquement entre 60 et
+      75 ans, remboursement anticipé exclu sauf invalidité grave ou décès. À l'échéance, la sortie en
+      capital est imposée au <b>demi-taux global</b> (votre taux moyen d'imposition divisé par deux).
+      <br><br><b>Sortie anticipée :</b> la circulaire L.I.R. n° 111bis/1 est explicite — un remboursement
+      contraire aux conditions de l'article 111bis entraîne l'imposition <b>au tarif normal</b> du
+      contribuable, et non au demi-taux. L'avantage obtenu à l'entrée est donc repris, avec en général
+      un taux de sortie supérieur au taux d'entrée si les revenus ont progressé. C'est le sens de
+      l'option « rachat anticipé » ci-dessus.
+    </div>
+
+    <div class="res" id="res_b"></div>
+  </div>
+</div>
+
+<!-- ============ COMPARATIF ============ -->
+<div class="card">
+  <h2>Comparatif <span class="sub">à l'horizon retenu</span></h2>
+  <div class="body">
+    <table id="tbl">
+      <thead><tr><th>Support</th><th>Versé</th><th>Net final</th><th>TRI net</th><th>VAN</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="chart" id="chart"></div>
+    <div class="legend" id="leg"></div>
+    <div class="hint" style="margin-top:12px">
+      TRI net : taux de rendement interne des flux réels (versements négatifs chaque année, capital net
+      encaissé la dernière année). VAN : valeur actuelle nette de ces mêmes flux au taux d'actualisation
+      choisi en haut de page.
+    </div>
+  </div>
+</div>
+
+
+<!-- ============ PARAMÈTRES FISCAUX ============ -->
+<div class="card" style="border-top-color:#93a4c4">
+  <h2 style="color:#c3d0e6">Paramètres fiscaux <span class="sub">à vérifier chaque année</span></h2>
+  <div class="body">
+    <div class="note" style="margin:0 0 14px">
+      Toutes les constantes du calcul sont modifiables ici. Si une règle change, corrigez la valeur
+      sans avoir besoin de toucher au code. Chaque ligne indique la source officielle à consulter.
+    </div>
+
+    <div class="sect">Barème</div>
+    <div class="field"><label>Indexation du barème (100 = barème 2026 tel que codé)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="k_index"><span class="unit">%</span></div></div>
+    <div class="field"><label>Contribution fonds pour l'emploi — taux normal</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="k_fpe1"><span class="unit">%</span></div></div>
+    <div class="field"><label>Contribution fonds pour l'emploi — taux majoré</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="k_fpe2"><span class="unit">%</span></div></div>
+    <div class="field"><label>Seuil du taux majoré (classe 1 / 1a)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="k_fpeS"><span class="unit">€</span></div></div>
+    <div class="hint">Source : impotsdirects.public.lu, barème applicable à l'année d'imposition. Le seuil
+      est doublé en classe 2. Vérifié en septembre 2026 — barème à 23 tranches issu de la réforme 2025,
+      de 0 % jusqu'à 13 230 € à 42 % au-delà de 234 870 €.</div>
+
+    <div class="sect">Revenus de capitaux</div>
+    <div class="field"><label>Abattement sur revenus de capitaux mobiliers (par contribuable)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="k_abat"><span class="unit">€</span></div></div>
+    <div class="field"><label>Taux RELIBI sur intérêts</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="k_relibi"><span class="unit">%</span></div></div>
+    <div class="field"><label>Franchise RELIBI (par an et par agent payeur)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="k_relibiF"><span class="unit">€</span></div></div>
+    <div class="field"><label>Franchise sur bénéfice de spéculation (art. 99bis)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="k_spec"><span class="unit">€</span></div></div>
+    <div class="field"><label>Contribution dépendance (CADEP)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="k_cadep"><span class="unit">%</span></div></div>
+    <div class="hint">Sources : loi RELIBI du 23 décembre 2005 modifiée (impotsdirects.public.lu, rubrique
+      « fiscalité de l'épargne ») ; article 115 n° 15a L.I.R. pour l'abattement, doublé en imposition
+      collective ; article 99bis L.I.R. pour la spéculation.</div>
+
+    <div class="sect">Plafonds de déduction</div>
+    <div class="field"><label>Prévoyance-vieillesse art. 111bis (par contribuable)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="k_111bis"><span class="unit">€</span></div></div>
+    <div class="field"><label>Assurances art. 111 (par membre du ménage)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="k_111"><span class="unit">€</span></div></div>
+    <div class="field"><label>Épargne-logement — moins de 41 ans (par membre)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="k_bausJ"><span class="unit">€</span></div></div>
+    <div class="field"><label>Épargne-logement — 41 ans et plus (par membre)</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="k_baus"><span class="unit">€</span></div></div>
+    <div class="hint">
+      <b>Le plafond 111bis est la valeur la plus incertaine de l'app.</b> Il est passé de 3 200 € à
+      4 500 € au 1ᵉʳ janvier 2026 selon deux sources concordantes, mais une troisième source mise à jour
+      en février 2026 mentionnait encore 3 200 €. À confirmer sur guichet.public.lu (rubrique « déduire
+      les primes versées à un contrat de prévoyance-vieillesse ») avant tout versement.
+    </div>
+
+    <button class="reset" id="resetK" style="margin:14px 0 0">Restaurer les paramètres de septembre 2026</button>
+  </div>
+</div>
+
+<button class="reset" id="reset">Réinitialiser toutes les valeurs</button>
+
+<footer>
+  <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
+  à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
+  l'objet d'ajustements d'indexation, et les crédits d'impôt personnels ne sont pas pris en compte.
+  Vérifiez votre situation sur <a href="https://impotsdirects.public.lu">impotsdirects.public.lu</a> ou
+  auprès d'un conseil. Vos données restent sur cet appareil (stockage local).
+</footer>
+
+</main>
+
+<div id="upd">
+  <span>Nouvelle version disponible</span>
+  <button id="updBtn">Mettre à jour</button>
+</div>
+
+<script>
+/* =========================================================
+   BARÈME LUXEMBOURGEOIS — réforme fiscale 2025, année 2026
+   ========================================================= */
+const TRANCHES = [
+  [13230,0],[15435,.08],[17640,.09],[19845,.10],[22050,.11],[24255,.12],
+  [26550,.14],[28845,.16],[31140,.18],[33435,.20],[35730,.22],[38025,.24],
+  [40320,.26],[42615,.28],[44910,.30],[47205,.32],[49500,.34],[51795,.36],
+  [54090,.38],[117450,.39],[176160,.40],[234870,.41],[Infinity,.42]
+];
+
+let IDX = 1;   // coefficient d'indexation des seuils du barème
+function bareme(r){
+  if(r<=0) return 0;
+  let imp=0, bas=0;
+  for(const [h,taux] of TRANCHES){
+    const haut = h===Infinity ? Infinity : h*IDX;
+    if(r<=bas) break;
+    imp += (Math.min(r,haut)-bas)*taux;
+    bas = haut;
+  }
+  return imp;
+}
+function tauxMarginalBareme(r){
+  if(r<=0) return 0;
+  let bas=0;
+  for(const [h,taux] of TRANCHES){ const haut = h===Infinity?Infinity:h*IDX; if(r<=haut) return taux; bas=haut; }
+  return .42;
+}
+function impotClasse(revenu,classe){
+  if(revenu<=0) return 0;
+  return classe==='2' ? 2*bareme(revenu/2) : bareme(revenu);
+}
+function tauxFPE(revenu,classe){
+  const seuil = K('k_fpeS') * (classe==='2' ? 2 : 1);
+  return revenu>seuil ? K('k_fpe2')/100 : K('k_fpe1')/100;
+}
+function tmiClasse(revenu,classe){
+  return classe==='2' ? tauxMarginalBareme(revenu/2) : tauxMarginalBareme(revenu);
+}
+
+/* Impôt marginal réel sur un revenu additionnel : différentiel de barème.
+   Bien plus juste que d'appliquer le TMI, car le supplément peut chevaucher
+   plusieurs tranches. */
+function impotSupplementaire(base, supplement, classe){
+  if(supplement<=0) return 0;
+  const c = 1 + tauxFPE(base+supplement, classe);
+  return (impotClasse(base+supplement,classe) - impotClasse(base,classe)) * c;
+}
+
+let CADEP = .014;
+
+/* ================= UTILITAIRES ================= */
+const $ = id => document.getElementById(id);
+const nf = new Intl.NumberFormat('fr-FR',{maximumFractionDigits:0});
+const nf2 = new Intl.NumberFormat('fr-FR',{minimumFractionDigits:1,maximumFractionDigits:1});
+const eur = v => (isFinite(v)? nf.format(Math.round(v)) : '—') + ' €';
+const pct = v => (isFinite(v)? nf2.format(v*100) : '—') + ' %';
+const num = id => { const v = parseFloat(($(id).value||'').replace(',','.')); return isFinite(v)?v:0; };
+
+function tri(flux){
+  // flux[0..n], bisection sur [-0.95, 2]
+  const van = t => flux.reduce((s,f,i)=> s + f/Math.pow(1+t,i), 0);
+  let lo=-0.95, hi=2;
+  if(van(lo)*van(hi) > 0) return NaN;
+  for(let i=0;i<200;i++){
+    const mid=(lo+hi)/2;
+    if(van(lo)*van(mid) <= 0) hi=mid; else lo=mid;
+  }
+  return (lo+hi)/2;
+}
+function van(flux,taux){
+  return flux.reduce((s,f,i)=> s + f/Math.pow(1+taux,i), 0);
+}
+function ligne(l,v,cls){
+  return '<div class="line'+(cls?' '+cls:'')+'"><span>'+l+'</span><span>'+v+'</span></div>';
+}
+
+/* ================= ÉTAT ================= */
+const K_DEFAUTS = {
+  k_index:100, k_fpe1:7, k_fpe2:9, k_fpeS:150000,
+  k_abat:1500, k_relibi:20, k_relibiF:250, k_spec:500, k_cadep:1.4,
+  k_111bis:4500, k_111:672, k_bausJ:1344, k_baus:672
+};
+const K_CHAMPS = Object.keys(K_DEFAUTS);
+const K = id => { const v = parseFloat(($(id).value||'').replace(',','.')); return isFinite(v)?v:K_DEFAUTS[id]; };
+
+const DEFAUTS = {
+  duree:15, actu:2,
+  p_nom:'Ménage 1', p_revenu:120000, p_classe:'2', p_cadep:'1', p_enfants:2, p_age:38,
+  c_init:15000, c_mens:150, c_taux:1.5,
+  l_cotis:2688, l_rend:1.5, l_reinv:'1',
+  a_init:50000, a_mens:200, a_croiss:5, a_div:2, a_frais:0.3,
+  a_qual:'1', a_ras:15, a_spec:0,
+  e_init:50000, e_mens:200, e_perf:7, e_ter:0.22, e_garde:0.15,
+  e_type:'cap', e_divpart:30, e_spec:0,
+  o_init:50000, o_mens:200, o_coupon:3.2, o_frais:0.2, o_regime:'relibi',
+  v_init:50000, v_mens:200, v_rend:3.5, v_gestion:0.8, v_entree:1,
+  v_prime:672, v_reinv:'1',
+  b_versement:9000, b_contrats:'2', b_rend:4, b_reinv:'1', b_sortie:'capital'
+};
+const CHAMPS = Object.keys(DEFAUTS);
+
+let MENAGE = '1';
+let MENAGES = [];
+const cle = m => 'comparateurLU:menage'+m;
+
+function lireListe(){
+  try{
+    const l = JSON.parse(localStorage.getItem('comparateurLU:liste')||'null');
+    if(Array.isArray(l) && l.length) return l;
+  }catch(e){}
+  return ['1','2'];
+}
+function ecrireListe(){
+  try{ localStorage.setItem('comparateurLU:liste', JSON.stringify(MENAGES)); }catch(e){}
+}
+function nomMenage(m){
+  try{
+    const d = JSON.parse(localStorage.getItem(cle(m))||'{}');
+    if(d.p_nom) return d.p_nom;
+  }catch(e){}
+  return 'Ménage '+m;
+}
+function preset(m){
+  const i = MENAGES.indexOf(m);
+  return {...DEFAUTS, p_nom:'Ménage '+(i>=0?i+1:MENAGES.length+1), p_enfants: m==='2' ? 1 : 2};
+}
+function chargerMenage(m){
+  let d={};
+  try{ d = JSON.parse(localStorage.getItem(cle(m))||'{}'); }catch(e){}
+  const base = preset(m);
+  CHAMPS.forEach(k=>{
+    const el=$(k); if(!el) return;
+    el.value = (d[k]!==undefined && d[k]!=='') ? d[k] : base[k];
+  });
+}
+let SIG = null;
+function renderMenages(){
+  const c = $('menages');
+  const sig = MENAGES.join('|')+'#'+MENAGE;
+  // reconstruction seulement si la liste ou le ménage actif change :
+  // remplacer le DOM à chaque frappe casserait le clic en cours (mousedown/mouseup
+  // sur deux noeuds différents = aucun événement click).
+  if(sig === SIG){
+    c.querySelectorAll('.mg[data-mg]').forEach(btn=>{
+      const nom = btn.dataset.mg===MENAGE ? ($('p_nom').value || nomMenage(btn.dataset.mg)) : nomMenage(btn.dataset.mg);
+      if(btn.textContent !== nom) btn.textContent = nom;
+    });
+    return;
+  }
+  SIG = sig;
+  c.innerHTML = MENAGES.map(m =>
+    '<button class="mg'+(m===MENAGE?' on':'')+'" data-mg="'+m+'">'+
+    (m===MENAGE ? ($('p_nom').value || nomMenage(m)) : nomMenage(m))+'</button>'
+  ).join('') + '<button class="mg add" id="addMg" title="Ajouter un ménage">+</button>';
+
+  c.querySelectorAll('.mg[data-mg]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(btn.dataset.mg===MENAGE) return;
+      basculer(btn.dataset.mg);
+    });
+  });
+  $('addMg').addEventListener('click', ()=>{
+    const id = String(Date.now());
+    sauverMenage();
+    MENAGES.push(id); ecrireListe();
+    MENAGE = id;
+    try{ localStorage.setItem('comparateurLU:actif', MENAGE); }catch(e){}
+    CHAMPS.forEach(k=>{ const el=$(k); if(el) el.value=preset(id)[k]; });
+    calcAll();
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+}
+function basculer(m){
+  sauverMenage();
+  MENAGE = m;
+  try{ localStorage.setItem('comparateurLU:actif', MENAGE); }catch(e){}
+  chargerMenage(MENAGE);
+  calcAll();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function sauverMenage(){
+  const d={};
+  CHAMPS.forEach(k=>{ const el=$(k); if(el) d[k]=el.value; });
+  try{ localStorage.setItem(cle(MENAGE), JSON.stringify(d)); }catch(e){}
+}
+function chargerParams(){
+  let d={};
+  try{ d = JSON.parse(localStorage.getItem('comparateurLU:params')||'{}'); }catch(e){}
+  K_CHAMPS.forEach(k=>{
+    const el=$(k); if(!el) return;
+    el.value = (d[k]!==undefined && d[k]!=='') ? d[k] : K_DEFAUTS[k];
+  });
+}
+function sauverParams(){
+  const d={};
+  K_CHAMPS.forEach(k=>{ const el=$(k); if(el) d[k]=el.value; });
+  try{ localStorage.setItem('comparateurLU:params', JSON.stringify(d)); }catch(e){}
+}
+function charger(){ chargerParams(); chargerMenage(MENAGE); }
+function sauver(){ sauverMenage(); sauverParams(); }
+
+/* ================= MOTEUR ================= */
+let PROFIL={};
+
+function calcProfil(){
+  IDX = K('k_index')/100;
+  CADEP = K('k_cadep')/100;
+  const revenu = num('p_revenu');
+  const classe = $('p_classe').value;
+  const cadepOn = $('p_cadep').value==='1';
+  const base = impotClasse(revenu,classe);
+  const fpeT = tauxFPE(revenu,classe);
+  const fpe = base*fpeT;
+  const tot = base+fpe;
+  const tmi = tmiClasse(revenu,classe)*(1+fpeT);
+  const tauxMoyen = revenu>0 ? tot/revenu : 0;
+
+  PROFIL = {revenu, classe, cadepOn, base, fpeT, tot, tmi, tauxMoyen,
+            abattementRCM: K('k_abat') * (classe==='2' ? 2 : 1),
+            cadep: cadepOn ? CADEP : 0};
+
+  const adultes = classe==='2' ? 2 : 1;
+  const enf = Math.max(0, num('p_enfants'));
+  const membres = adultes + enf;
+  const uniteB = num('p_age') < 41 ? K('k_bausJ') : K('k_baus');
+  $('r_menage').textContent = adultes+' adulte'+(adultes>1?'s':'')+' + '+enf+' enfant'+(enf>1?'s':'');
+  $('r_pl111').textContent = eur(K('k_111')*membres)+'  ('+membres+' × '+eur(K('k_111'))+')';
+  $('r_plBaus').textContent = eur(uniteB*membres)+'  ('+membres+' × '+eur(uniteB)+')';
+  $('r_pl111bis').textContent = eur(K('k_111bis')*adultes)+'  ('+adultes+' × '+eur(K('k_111bis'))+')';
+
+  $('r_impotBase').textContent = eur(base);
+  $('r_fpe').textContent = eur(fpe)+'  ('+nf2.format(fpeT*100)+' %)';
+  $('r_impotTot').textContent = eur(tot);
+  $('r_tauxMoyen').textContent = pct(tauxMoyen);
+  $('r_tmi').textContent = pct(tmi);
+}
+
+/* Impôt annuel sur un revenu de capitaux mobiliers (dividendes / intérêts au barème) */
+function impotRCM(brut, qualifiant){
+  const base = qualifiant ? brut*0.5 : brut;
+  const imposable = Math.max(0, base - PROFIL.abattementRCM);
+  const ir = impotSupplementaire(PROFIL.revenu, imposable, PROFIL.classe);
+  const dep = PROFIL.cadep * Math.max(0, base - PROFIL.abattementRCM);
+  return ir + dep;
+}
+
+/* Bénéfice de spéculation (cession < 6 mois) */
+function impotSpeculation(gain){
+  if(gain <= K('k_spec')) return 0;    // franchise art. 99bis
+  const ir = impotSupplementaire(PROFIL.revenu, gain, PROFIL.classe);
+  return ir + PROFIL.cadep*gain;
+}
+
+/* Simulation générique d'un portefeuille titres.
+   Retourne {flux, verse, brut, impots, net} */
+function simulTitres(o){
+  const n = o.duree;
+  const perfNette = o.perf - o.frais;          // croissance du capital
+  let cap = o.init;
+  let verse = o.init;
+  let impotsCum = 0;
+  const flux = [-o.init];
+
+  for(let i=1;i<=n;i++){
+    const apports = o.mens*12;
+    // apports lissés : moitié d'année de rendement en moyenne
+    cap = cap*(1+perfNette/100) + apports*(1+perfNette/200);
+    verse += apports;
+
+    if(o.revenuAnnuelPct>0){
+      const brut = cap * o.revenuAnnuelPct/100;
+      const impLU = o.revenuImposable ? impotRCM(brut, o.qualifiant) : 0;
+      const ras = brut * (o.rasPct||0)/100;
+      // la retenue étrangère s'impute sur l'impôt luxembourgeois ; l'excédent
+      // n'est pas restituable au Luxembourg (réclamation auprès de l'État source)
+      const imp = Math.max(impLU, ras);
+      impotsCum += imp;
+      // revenu distribué : réinvesti net d'impôt.
+      // si le revenu est déjà compris dans la performance (ETF distribuant),
+      // seul l'impôt sort du portefeuille.
+      cap += o.revenuInclus ? -imp : (brut - imp);
+    }
+    flux.push(-apports);
+  }
+
+  const pvBrute = Math.max(0, cap - verse);
+  const gainSpec = pvBrute * (o.partSpec/100);
+  const impSpec = impotSpeculation(gainSpec);
+  impotsCum += impSpec;
+  const net = cap - impSpec;
+  flux[n] += net;
+
+  return {flux, verse, brut:cap, impots:impotsCum, net, pvBrute, gainSpec, impSpec};
+}
+
+const RES = {};
+
+function calcAction(){
+  const n = +$('duree').value;
+  const r = simulTitres({
+    duree:n, init:num('a_init'), mens:num('a_mens'),
+    perf:num('a_croiss'), frais:num('a_frais'),
+    revenuAnnuelPct:num('a_div'), revenuImposable:true, revenuInclus:false,
+    qualifiant: $('a_qual').value==='1',
+    rasPct:num('a_ras'), partSpec:num('a_spec')
+  });
+  RES.action = r;
+  $('res_a').innerHTML =
+    ligne('Total versé', eur(r.verse)) +
+    ligne('Capital brut à l\'échéance', eur(r.brut)) +
+    ligne('Plus-value latente', eur(r.pvBrute)) +
+    ligne('Impôt sur dividendes (cumulé)', eur(r.impots - r.impSpec)) +
+    ligne('Impôt de spéculation', r.impSpec>0 ? eur(r.impSpec) : 'exonérée') +
+    ligne('Capital net', eur(r.net), 'big') +
+    (num('a_spec')===0
+      ? '<span class="tag ok">Plus-value exonérée — détention &gt; 6 mois</span>'
+      : '<span class="tag bad">'+nf2.format(num('a_spec'))+' % du gain traité en spéculation</span>');
+}
+
+function calcETF(){
+  const n = +$('duree').value;
+  const dist = $('e_type').value==='dist';
+  const perf = num('e_perf');
+  const divPct = dist ? perf*num('e_divpart')/100 : 0;
+  const r = simulTitres({
+    duree:n, init:num('e_init'), mens:num('e_mens'),
+    perf:perf, frais:num('e_ter')+num('e_garde'),
+    revenuAnnuelPct:divPct, revenuImposable:dist, revenuInclus:true,
+    qualifiant:false, rasPct:0, partSpec:num('e_spec')
+  });
+  RES.etf = r;
+  $('res_e').innerHTML =
+    ligne('Total versé', eur(r.verse)) +
+    ligne('Capital brut à l\'échéance', eur(r.brut)) +
+    ligne('Plus-value latente', eur(r.pvBrute)) +
+    ligne('Impôt sur distributions (cumulé)', dist ? eur(r.impots - r.impSpec) : '—') +
+    ligne('Impôt de spéculation', r.impSpec>0 ? eur(r.impSpec) : 'exonérée') +
+    ligne('Capital net', eur(r.net), 'big') +
+    (!dist && num('e_spec')===0
+      ? '<span class="tag ok">Aucune imposition sur toute la durée</span>'
+      : '<span class="tag neutral">Distributions imposées au barème</span>');
+}
+
+function calcObligation(){
+  const n = +$('duree').value;
+  const relibi = $('o_regime').value==='relibi';
+  const coupon = num('o_coupon'), frais = num('o_frais');
+  let cap = num('o_init'), verse = num('o_init'), impots = 0;
+  const mens = num('o_mens');
+  const flux = [-cap];
+
+  for(let i=1;i<=n;i++){
+    const apports = mens*12;
+    const interets = (cap + apports/2) * coupon/100;
+    let imp;
+    if(relibi){
+      const b = Math.max(0, interets - K('k_relibiF'));
+      imp = b * K('k_relibi')/100;
+      if(PROFIL.cadepOn) imp += b * CADEP;
+    }else{
+      imp = impotRCM(interets, false);
+    }
+    impots += imp;
+    cap = cap*(1-frais/100) + apports + interets - imp;
+    verse += apports;
+    flux.push(-apports);
+  }
+  const net = cap;
+  flux[n] += net;
+  const r = {flux, verse, brut:cap+impots, impots, net};
+  RES.obligation = r;
+
+  $('res_o').innerHTML =
+    ligne('Total versé', eur(r.verse)) +
+    ligne('Intérêts bruts cumulés', eur(cap + impots - verse)) +
+    ligne(relibi?'RELIBI 20 % (cumulé)':'Impôt au barème (cumulé)', eur(impots)) +
+    ligne('Capital net', eur(net), 'big') +
+    (relibi
+      ? '<span class="tag neutral">Retenue libératoire — rien à redéclarer</span>'
+      : '<span class="tag bad">Intégré au barème progressif</span>');
+}
+
+function calcEpargne(){
+  const n = +$('duree').value;
+  const taux = num('c_taux'), mens = num('c_mens');
+  let cap = num('c_init'), verse = cap, impots = 0;
+  const flux = [-cap];
+  for(let i=1;i<=n;i++){
+    const apports = mens*12;
+    const interets = (cap + apports/2) * taux/100;
+    const base = Math.max(0, interets - K('k_relibiF'));   // franchise RELIBI
+    let imp = base * K('k_relibi')/100;
+    if(PROFIL.cadepOn) imp += base*CADEP;
+    impots += imp;
+    cap += apports + interets - imp;
+    verse += apports;
+    flux.push(-apports);
+  }
+  flux[n] += cap;
+  RES.epargne = {flux, verse, brut:cap+impots, impots, net:cap};
+  $('res_c').innerHTML =
+    ligne('Total versé', eur(verse)) +
+    ligne('Intérêts bruts cumulés', eur(cap+impots-verse)) +
+    ligne('RELIBI 20 % (cumulée)', eur(impots)) +
+    ligne('Capital net', eur(cap), 'big') +
+    '<span class="tag ok">Disponible immédiatement</span>';
+}
+
+function calcBausparen(){
+  const n = +$('duree').value;
+  const membres = (PROFIL.classe==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
+  const unite = num('p_age') < 41 ? K('k_bausJ') : K('k_baus');
+  const plafond = unite * membres;
+  $('l_plafondAff').textContent = eur(plafond)+'  ('+membres+' × '+eur(unite)+')';
+
+  const cotis = num('l_cotis'), rend = num('l_rend');
+  const deductible = Math.min(cotis, plafond);
+  const reinv = $('l_reinv').value==='1';
+  let cap=0, verse=0, economie=0;
+  const flux=[0];
+  for(let i=1;i<=n;i++){
+    const eco = impotSupplementaire(PROFIL.revenu - deductible, deductible, PROFIL.classe);
+    economie += eco;
+    const injecte = cotis + (reinv ? eco : 0);
+    cap = cap*(1+rend/100) + injecte*(1+rend/200);
+    verse += cotis;
+    flux.push(-cotis + (reinv ? 0 : eco));
+  }
+  flux[n] += cap;
+  RES.bauspar = {flux, verse, brut:cap, impots:0, net:cap, economie};
+  $('res_l').innerHTML =
+    ligne('Total versé', eur(verse)) +
+    ligne('Part déductible par an', eur(deductible)+' / '+eur(plafond)) +
+    ligne('Économie d\'impôt cumulée', eur(economie)) +
+    ligne('Capital net', eur(cap), 'big') +
+    '<span class="tag neutral">Affectation logement — blocage 10 ans</span>' +
+    (cotis > plafond
+      ? '<div class="hint" style="color:#f87171">Cotisation supérieure au plafond : '+eur(cotis-plafond)+' par an ne sont pas déductibles.</div>' : '');
+}
+
+function calcAssuranceVie(){
+  const n = +$('duree').value;
+  const rend = num('v_rend') - num('v_gestion');
+  const fEntree = num('v_entree')/100;
+  const membres = (PROFIL.classe==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
+  const plafond = K('k_111') * membres;
+  $('v_plafondAff').textContent = eur(plafond)+'  ('+membres+' membres)';
+  const primeDeduite = Math.min(num('v_prime'), plafond);
+  const reinv = $('v_reinv').value==='1';
+
+  let cap = num('v_init')*(1-fEntree);
+  let verse = num('v_init');
+  let economie = 0;
+  const mens = num('v_mens');
+  const flux = [-num('v_init')];
+
+  for(let i=1;i<=n;i++){
+    const apports = mens*12;
+    const eco = impotSupplementaire(PROFIL.revenu - primeDeduite, primeDeduite, PROFIL.classe);
+    economie += eco;
+    const injecte = apports*(1-fEntree) + (reinv ? eco : 0);
+    cap = cap*(1+rend/100) + injecte*(1+rend/200);
+    verse += apports;
+    flux.push(-apports + (reinv ? 0 : eco));
+  }
+  const net = cap;   // sortie non imposée au Luxembourg
+  flux[n] += net;
+  const r = {flux, verse, brut:cap, impots:0, net, economie};
+  RES.av = r;
+
+  $('res_v').innerHTML =
+    ligne('Total versé', eur(r.verse)) +
+    ligne('Prime déductible retenue', eur(primeDeduite)+' / '+eur(plafond)) +
+    ligne('Économie d\'impôt cumulée', eur(economie)) +
+    ligne('Impôt à la sortie', '0 €') +
+    ligne('Capital net', eur(net), 'big') +
+    '<span class="tag ok">Rachat et capital décès non imposés au Luxembourg</span>' +
+    (num('v_prime') > plafond
+      ? '<div class="hint" style="color:#f87171">Prime saisie supérieure au plafond art. 111 — seuls '+eur(plafond)+' sont déductibles, et ce plafond est partagé avec vos primes RC, santé et intérêts de prêts à la consommation.</div>'
+      : '');
+}
+
+function calc111bis(){
+  const n = +$('duree').value;
+  const vers = num('b_versement');
+  const contrats = parseInt($('b_contrats').value,10) || 1;
+  const plafond = K('k_111bis') * contrats;
+  $('b_plafondAff').textContent = eur(plafond)+'  ('+contrats+' × '+eur(K('k_111bis'))+')';
+  const deductible = Math.min(vers, plafond);
+  const rend = num('b_rend');
+  const reinv = $('b_reinv').value==='1';
+  const mode = $('b_sortie').value;
+
+  let cap=0, verse=0, economie=0;
+  const flux=[0];
+  for(let i=1;i<=n;i++){
+    const eco = impotSupplementaire(PROFIL.revenu - deductible, deductible, PROFIL.classe);
+    economie += eco;
+    const injecte = vers + (reinv ? eco : 0);
+    cap = cap*(1+rend/100) + injecte*(1+rend/200);
+    verse += vers;
+    flux.push(-vers + (reinv ? 0 : eco));
+  }
+
+  let impotSortie, libelleSortie;
+  if(mode==='capital'){
+    impotSortie = cap * (PROFIL.tauxMoyen/2);                       // demi-taux global
+    libelleSortie = 'Impôt de sortie (demi-taux global '+pct(PROFIL.tauxMoyen/2)+')';
+  }else if(mode==='rente'){
+    impotSortie = impotSupplementaire(PROFIL.revenu, cap*0.5, PROFIL.classe);
+    libelleSortie = 'Impôt sur rente (moitié imposable)';
+  }else{
+    // rachat anticipé non autorisé : tarif normal plein sur le capital remboursé
+    impotSortie = impotSupplementaire(PROFIL.revenu, cap, PROFIL.classe);
+    libelleSortie = 'Impôt de sortie (tarif normal plein)';
+  }
+  const net = cap - impotSortie;
+  flux[n] += net;
+  const r = {flux, verse, brut:cap, impots:impotSortie, net, economie};
+  RES.pv = r;
+
+  const alerte = n<10
+    ? '<div class="hint" style="color:#f87171">Durée inférieure à 10 ans : le contrat ne remplirait pas la condition minimale de l\'article 111bis et les déductions seraient remises en cause.</div>'
+    : '';
+
+  $('res_b').innerHTML =
+    ligne('Total versé', eur(r.verse)) +
+    ligne('Part déductible par an', eur(deductible)+' / '+eur(plafond)) +
+    ligne('Économie d\'impôt cumulée', eur(economie)) +
+    ligne('Capital brut à l\'échéance', eur(cap)) +
+    ligne(libelleSortie, eur(impotSortie)) +
+    ligne('Capital net', eur(net), 'big') +
+    (mode==='anticipe'
+      ? '<span class="tag bad">Avantage fiscal repris — imposition au tarif normal</span>'
+      : (deductible>0 ? '<span class="tag ok">Déduction immédiate au taux marginal</span>' : '')) +
+    (vers > plafond
+      ? '<div class="hint" style="color:#f87171">Versement supérieur au plafond : '+eur(vers-plafond)+' par an ne sont pas déductibles et restent bloqués jusqu\'à 60 ans.</div>'
+      : '') +
+    alerte;
+}
+
+/* ================= AFFICHAGE GLOBAL ================= */
+const SUPPORTS = [
+  {k:'epargne', nom:'Épargne',      court:'ÉPARGNE',     c:'#5eead4', id:'card-epargne'},
+  {k:'action', nom:'Action',        court:'ACTION',      c:'#4ade80', id:'card-action'},
+  {k:'etf',    nom:'ETF',           court:'ETF',         c:'#fb7c4e', id:'card-etf'},
+  {k:'obligation', nom:'Obligation',court:'OBLIG.',      c:'#60a5fa', id:'card-obligation'},
+  {k:'av',     nom:'Assurance-vie', court:'ASS.-VIE',    c:'#b98cf5', id:'card-av'},
+  {k:'bauspar',nom:'Épargne-log.',  court:'BAUSPAR',     c:'#f472b6', id:'card-bauspar'},
+  {k:'pv',     nom:'111bis',        court:'111BIS',      c:'#f5a623', id:'card-pv'}
+];
+
+/* Poches : montant mensuel, liquidité */
+const POCHES = [
+  {nom:'Compte d\'épargne', c:'#5eead4', m:()=>num('c_mens'),        liq:'immédiate',      cls:'liq'},
+  {nom:'ETF',               c:'#fb7c4e', m:()=>num('e_mens'),        liq:'quelques jours', cls:'liq'},
+  {nom:'Action',            c:'#4ade80', m:()=>num('a_mens'),        liq:'quelques jours', cls:'liq'},
+  {nom:'Obligation',        c:'#60a5fa', m:()=>num('o_mens'),        liq:'quelques jours', cls:'liq'},
+  {nom:'Assurance-vie',     c:'#b98cf5', m:()=>num('v_mens'),        liq:'quelques semaines', cls:'liq'},
+  {nom:'Épargne-logement',  c:'#f472b6', m:()=>num('l_cotis')/12,    liq:'10 ans / logement', cls:'moyen'},
+  {nom:'Prévoyance 111bis', c:'#f5a623', m:()=>num('b_versement')/12,liq:'bloqué à 60 ans', cls:'bloc'}
+];
+
+function afficheAllocation(){
+  const lignes = POCHES.map(p=>({...p, v:p.m()}));
+  const total = lignes.reduce((s,l)=>s+l.v,0) || 1;
+  $('alloc').querySelector('tbody').innerHTML = lignes.map(l=>
+    '<tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+l.c+';margin-right:6px"></span>'+l.nom+'</td>'+
+    '<td class="num">'+nf.format(Math.round(l.v))+' €</td>'+
+    '<td class="num">'+nf2.format(l.v/total*100)+' %</td>'+
+    '<td style="text-align:right;color:var(--dim);font-size:11.5px">'+l.liq+'</td></tr>').join('');
+  const liq = lignes.filter(l=>l.cls==='liq').reduce((s,l)=>s+l.v,0);
+  const bloc = lignes.filter(l=>l.cls==='bloc').reduce((s,l)=>s+l.v,0);
+  $('al_total').textContent = nf.format(Math.round(total))+' € / mois';
+  $('al_liq').textContent = nf.format(Math.round(liq))+' €  ('+nf2.format(liq/total*100)+' %)';
+  $('al_bloc').textContent = nf.format(Math.round(bloc))+' €  ('+nf2.format(bloc/total*100)+' %)';
+  $('al_bar').innerHTML = '<div style="display:flex;height:16px;border-radius:8px;overflow:hidden">' +
+    lignes.filter(l=>l.v>0).map(l=>'<div style="width:'+(l.v/total*100)+'%;background:'+l.c+'"></div>').join('') + '</div>';
+}
+
+const REPARTITION_TYPE = {
+  c_mens:200, e_mens:600, a_mens:150, o_mens:150, v_mens:100, l_cotis:2688, b_versement:9000
+};
+
+function afficheGlobal(){
+  const tauxActu = num('actu')/100;
+  const pills = [], rows = [], bars = [];
+
+  SUPPORTS.forEach(s=>{
+    const r = RES[s.k];
+    if(!r) return;
+    const t = r.verse>0 ? tri(r.flux) : NaN;
+    const v = van(r.flux, tauxActu);
+    r.tri = t; r.van = v;
+    pills.push('<div class="pill" data-go="'+s.id+'" style="border-top-color:'+s.c+'"><div class="n" style="color:'+s.c+'">'+s.court+
+      '</div><div class="v">'+(isFinite(t)?nf2.format(t*100)+' %':'—')+'</div></div>');
+    bars.push({nom:s.nom, val:r.net, c:s.c});
+    rows.push({s, r, t, v});
+  });
+
+  $('pills').innerHTML = pills.join('');
+  $('pills').querySelectorAll('.pill').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const cible = document.getElementById(el.dataset.go);
+      if(!cible) return;
+      const h = document.querySelector('header').offsetHeight;
+      const y = cible.getBoundingClientRect().top + window.scrollY - h - 8;
+      window.scrollTo({top:y, behavior:'smooth'});
+      el.scrollIntoView({behavior:'smooth', block:'nearest', inline:'center'});
+      cible.animate(
+        [{boxShadow:'0 0 0 0 rgba(245,166,35,0)'},
+         {boxShadow:'0 0 0 3px rgba(245,166,35,.85)'},
+         {boxShadow:'0 0 0 0 rgba(245,166,35,0)'}],
+        {duration:1100, easing:'ease-out'}
+      );
+    });
+  });
+
+  const best = rows.reduce((a,b)=> (b.t>(a?a.t:-9)? b : a), null);
+  $('tbl').querySelector('tbody').innerHTML = rows.map(o=>
+    '<tr'+(o===best?' class="win"':'')+'><td>'+o.s.nom+'</td>'+
+    '<td class="num">'+eur(o.r.verse)+'</td>'+
+    '<td class="num">'+eur(o.r.net)+'</td>'+
+    '<td class="num">'+(isFinite(o.t)?nf2.format(o.t*100)+' %':'—')+'</td>'+
+    '<td class="num">'+eur(o.v)+'</td></tr>'
+  ).join('');
+
+  // graphique barres
+  const max = Math.max(...bars.map(b=>b.val), 1);
+  const H = 26, G = 12, W = 300, L = 92;
+  const h = bars.length*(H+G)+8;
+  let svg = '<svg viewBox="0 0 '+W+' '+h+'" xmlns="http://www.w3.org/2000/svg">';
+  bars.forEach((b,i)=>{
+    const y = i*(H+G)+4;
+    const w = Math.max(2, (b.val/max)*(W-L-4));
+    svg += '<text x="0" y="'+(y+17)+'" fill="#93a4c4" font-size="11" font-family="sans-serif">'+b.nom+'</text>';
+    svg += '<rect x="'+L+'" y="'+y+'" width="'+w+'" height="'+H+'" rx="4" fill="'+b.c+'" opacity="0.85"/>';
+    svg += '<text x="'+(L+w-6)+'" y="'+(y+17)+'" fill="#141d33" font-size="11" font-weight="700" text-anchor="end" font-family="sans-serif">'+eur(b.val)+'</text>';
+  });
+  svg += '</svg>';
+  $('chart').innerHTML = svg;
+  $('leg').innerHTML = 'Capital net à l\'échéance, après impôt luxembourgeois.';
+}
+
+function calcAll(){
+  $('dureeV').textContent = $('duree').value;
+  $('actuV').textContent = nf2.format(num('actu'));
+  $('e_divwrap').style.display = $('e_type').value==='dist' ? '' : 'none';
+  calcProfil();
+  calcEpargne();
+  calcBausparen();
+  calcAction();
+  calcETF();
+  calcObligation();
+  calcAssuranceVie();
+  calc111bis();
+  afficheAllocation();
+  afficheGlobal();
+  renderMenages();
+  sauver();
+}
+
+/* ================= INIT ================= */
+MENAGES = lireListe();
+try{ MENAGE = localStorage.getItem('comparateurLU:actif') || MENAGES[0]; }catch(e){ MENAGE = MENAGES[0]; }
+if(!MENAGES.includes(MENAGE)) MENAGE = MENAGES[0];
+
+$('delMg').addEventListener('click', ()=>{
+  if(MENAGES.length<2){ alert('Il faut garder au moins un ménage.'); return; }
+  if(!confirm('Supprimer « '+($('p_nom').value||nomMenage(MENAGE))+' » et toutes ses valeurs ?')) return;
+  try{ localStorage.removeItem(cle(MENAGE)); }catch(e){}
+  MENAGES = MENAGES.filter(m=>m!==MENAGE);
+  ecrireListe();
+  MENAGE = MENAGES[0];
+  try{ localStorage.setItem('comparateurLU:actif', MENAGE); }catch(e){}
+  chargerMenage(MENAGE);
+  calcAll();
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+charger();
+K_CHAMPS.forEach(k=>{
+  const el=$(k); if(!el) return;
+  el.addEventListener('input', calcAll);
+  el.addEventListener('change', calcAll);
+});
+$('resetK').addEventListener('click', ()=>{
+  K_CHAMPS.forEach(k=>{ const el=$(k); if(el) el.value=K_DEFAUTS[k]; });
+  calcAll();
+});
+CHAMPS.forEach(k=>{
+  const el=$(k); if(!el) return;
+  el.addEventListener('input', calcAll);
+  el.addEventListener('change', calcAll);
+});
+$('typeBtn').addEventListener('click', ()=>{
+  Object.entries(REPARTITION_TYPE).forEach(([k,v])=>{ const el=$(k); if(el) el.value=v; });
+  calcAll();
+  $('alloc').scrollIntoView({behavior:'smooth',block:'center'});
+});
+$('reset').addEventListener('click', ()=>{
+  CHAMPS.forEach(k=>{ const el=$(k); if(el) el.value=preset(MENAGE)[k]; });
+  calcAll();
+});
+calcAll();
+
+/* surlignage de la pastille correspondant à la carte visible */
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    const pill = document.querySelector('.pill[data-go="'+e.target.id+'"]');
+    if(pill) pill.classList.toggle('on', e.isIntersecting);
+  });
+}, {rootMargin:'-45% 0px -45% 0px'});
+setTimeout(()=>{
+  SUPPORTS.forEach(s=>{ const c=document.getElementById(s.id); if(c) obs.observe(c); });
+}, 200);
+
+/* réseau */
+function netState(){ $('offBadge').style.display = navigator.onLine ? 'none':'inline-block'; }
+window.addEventListener('online',netState); window.addEventListener('offline',netState); netState();
+
+/* service worker + bannière de mise à jour */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      reg.addEventListener('updatefound', ()=>{
+        const nw = reg.installing;
+        nw.addEventListener('statechange', ()=>{
+          if(nw.state==='installed' && navigator.serviceWorker.controller){
+            $('upd').style.display='flex';
+          }
+        });
+      });
+    }).catch(()=>{});
+  });
+  $('updBtn').addEventListener('click', ()=>{
+    navigator.serviceWorker.getRegistration().then(reg=>{
+      if(reg && reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
+      window.location.reload();
+    });
+  });
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>window.location.reload());
+}
+</script>
+</body>
+</html>

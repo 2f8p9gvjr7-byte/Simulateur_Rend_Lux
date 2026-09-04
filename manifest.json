@@ -1,0 +1,17 @@
+{
+  "name": "Comparateur Luxembourg",
+  "short_name": "Comparateur LU",
+  "description": "Comparateur de placements (action, ETF, obligation, assurance-vie, prévoyance-vieillesse 111bis) selon le régime fiscal luxembourgeois",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "fr",
+  "background_color": "#141d33",
+  "theme_color": "#141d33",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
