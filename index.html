@@ -1348,7 +1348,16 @@ window.addEventListener('online',netState); window.addEventListener('offline',ne
 /* service worker + bannière de mise à jour */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js').then(reg=>{
+    // updateViaCache:'none' empêche le navigateur de servir sw.js depuis son
+    // propre cache HTTP : sans cela un nouveau déploiement peut rester invisible.
+    navigator.serviceWorker.register('sw.js', {updateViaCache:'none'}).then(reg=>{
+      // on redemande au serveur s'il existe une nouvelle version : au démarrage,
+      // au retour dans l'app, et toutes les 30 minutes si elle reste ouverte.
+      const verifier = ()=>{ if(navigator.onLine) reg.update().catch(()=>{}); };
+      verifier();
+      document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) verifier(); });
+      window.addEventListener('online', verifier);
+      setInterval(verifier, 30*60*1000);
       reg.addEventListener('updatefound', ()=>{
         const nw = reg.installing;
         nw.addEventListener('statechange', ()=>{
