@@ -131,6 +131,17 @@ main{padding:14px 12px 0}
   position:absolute;right:13px;top:50%;transform:translateY(-50%);
   color:var(--dim);font-size:14px;pointer-events:none;
 }
+.key{
+  background:#243a5e;border:1px solid var(--accent);border-radius:11px;
+  padding:12px 13px;margin:2px 0 14px;
+}
+.key .kt{
+  font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;
+  color:var(--accent);margin-bottom:8px;
+}
+.key .field{margin-bottom:8px}
+.key .line{padding:3px 0}
+.key .line span:last-child{color:var(--accent);font-size:15px}
 .hint{font-size:12px;color:var(--dim);font-style:italic;margin:6px 2px 0;line-height:1.4}
 .rowsplit{border-top:1px dashed var(--line);margin:11px 0}
 .res{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
@@ -198,6 +209,11 @@ footer a{color:var(--dim)}
     <input type="range" id="actu" min="0" max="8" step="0.1" value="2">
     <span class="val"><span id="actuV">2,0</span> %</span>
   </div>
+  <div class="slider-row">
+    <label>Inflation</label>
+    <input type="range" id="p_infl" min="0" max="6" step="0.1" value="2">
+    <span class="val"><span id="inflV">2,0</span> %</span>
+  </div>
 
   <div class="menages" id="menages"></div>
   <div class="pills" id="pills"></div>
@@ -248,6 +264,16 @@ footer a{color:var(--dim)}
       points repris dans l'app : le plafond de l'article 111 (672 € par membre du ménage, enfants
       compris) et, indirectement, les frais de garde déductibles — à intégrer dans le revenu imposable
       ajusté saisi ci-dessus.
+    </div>
+    <div class="field">
+      <label>Indexation annuelle des versements</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="p_index"><span class="unit">%</span></div>
+    </div>
+    <div class="hint" style="margin-bottom:11px">
+      Au Luxembourg les salaires suivent l'échelle mobile : une tranche indiciaire de 2,5 % est
+      déclenchée dès que l'indice des prix atteint le seuil légal. Les capacités d'épargne suivent
+      donc mécaniquement, ce que ne fait pas un versement figé. Ce taux majore chaque année tous les
+      versements de l'app. Mettez 0 pour raisonner en euros constants.
     </div>
     <div class="field">
       <label>Contribution dépendance (CADEP 1,4 %)</label>
@@ -309,17 +335,37 @@ footer a{color:var(--dim)}
 <div class="card" id="card-epargne" style="border-top-color:#5eead4">
   <h2 style="color:#5eead4">Compte d'épargne <span class="sub">la réserve liquide</span></h2>
   <div class="body">
+    <div class="key">
+      <div class="kt">⚑ Le levier le plus rentable de cette page</div>
+      <div class="field" style="margin-bottom:8px"><label>Nombre de banques luxembourgeoises</label>
+        <div class="wrap"><input type="text" inputmode="numeric" id="c_banques"><span class="unit">bq.</span></div></div>
+      <div class="line"><span>Franchise RELIBI totale</span><span id="c_franchiseAff">—</span></div>
+      <div class="line"><span>Intérêts exonérés couverts</span><span id="c_couvertAff">—</span></div>
+      <div class="hint" style="margin-top:6px">
+        250 € par contribuable et par banque, doublé en imposition collective. Ouvrir un second
+        compte dans un autre établissement double la franchise — et la garantie des dépôts, plafonnée
+        à 100 000 € par déposant et par banque.
+      </div>
+    </div>
     <div class="field"><label>Capital initial</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="c_init"><span class="unit">€</span></div></div>
     <div class="field"><label>Versement mensuel</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="c_mens"><span class="unit">€</span></div></div>
     <div class="field"><label>Taux d'intérêt annuel</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="c_taux"><span class="unit">%</span></div></div>
+
     <div class="hint">
       Il n'existe pas d'équivalent luxembourgeois du Livret A : ni plafond, ni taux garanti par l'État,
       ni exonération. Ce sont de simples comptes d'épargne bancaires, dont les intérêts subissent la
-      RELIBI de 20 % au-delà de 250 € par an et par agent payeur. Le rendement réel est donc
-      généralement négatif après inflation — cette poche sert à la sécurité, pas au rendement.
+      RELIBI de 20 % au-delà de la franchise, qui est de 250 € par contribuable et par banque —
+      soit 500 € pour un couple imposé collectivement, et autant de fois que vous avez
+      d'établissements — d'où le champ ci-dessus. Répartir l'épargne de précaution sur deux banques
+      double la franchise, mais attention : la garantie des dépôts est plafonnée à 100 000 € par
+      déposant et par établissement, ce qui est une autre bonne raison de ne pas tout concentrer.
+      Les comptes courants et à vue y échappent totalement tant que leur
+      rémunération reste sous 0,75 %. Aucun plafond de dépôt en revanche, contrairement au Livret A
+      français. Le rendement réel est généralement négatif après inflation : cette poche sert à la
+      sécurité, pas au rendement.
     </div>
     <div class="res" id="res_c"></div>
   </div>
@@ -344,6 +390,12 @@ footer a{color:var(--dim)}
       et un contrat souscrit moins de 10 ans avant d'être affecté à autre chose déclenche une imposition
       rectificative. Seules des caisses d'épargne-logement agréées y ouvrent droit — un PEL français ou
       belge n'est pas déductible.
+      <br><br><b>Régime des intérêts :</b> depuis 2009, l'article 4 de la loi RELIBI exclut de son champ
+      les dépôts auprès d'une caisse d'épargne-logement agréée au Luxembourg ou dans l'UE/EEE. Pas de
+      retenue de 20 % donc, mais ces intérêts relèvent alors du barème progressif, avec l'abattement sur
+      revenus de capitaux mobiliers. Aux taux servis par ces contrats l'abattement les absorbe le plus
+      souvent — la simulation ci-dessous les traite comme non imposés, ce qui reste à vérifier si vous
+      avez par ailleurs beaucoup de revenus mobiliers.
     </div>
     <div class="res" id="res_l"></div>
   </div>
@@ -427,6 +479,12 @@ footer a{color:var(--dim)}
 <div class="card" id="card-obligation" style="border-top-color:var(--c-oblig)">
   <h2 style="color:var(--c-oblig)">Obligation <span class="sub">coupons &amp; RELIBI</span></h2>
   <div class="body">
+    <div class="key">
+      <div class="kt">⚑ Franchise multipliable</div>
+      <div class="field" style="margin-bottom:8px"><label>Nombre d'agents payeurs distincts</label>
+        <div class="wrap"><input type="text" inputmode="numeric" id="o_banques"><span class="unit">bq.</span></div></div>
+      <div class="line"><span>Franchise RELIBI totale</span><span id="o_franchiseAff">—</span></div>
+    </div>
     <div class="sect" style="border-left-color:var(--c-oblig)">Investissement</div>
     <div class="field"><label>Capital initial</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="o_init"><span class="unit">€</span></div></div>
@@ -436,6 +494,7 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" inputmode="decimal" id="o_coupon"><span class="unit">%</span></div></div>
     <div class="field"><label>Frais annuels</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="o_frais"><span class="unit">%</span></div></div>
+
 
     <div class="sect" style="border-left-color:var(--c-oblig)">Fiscalité luxembourgeoise</div>
     <div class="field"><label>Régime des intérêts</label>
@@ -533,8 +592,13 @@ footer a{color:var(--dim)}
 <div class="card">
   <h2>Comparatif <span class="sub">à l'horizon retenu</span></h2>
   <div class="body">
+    <div class="menages" style="margin-bottom:12px">
+      <button class="mg on" id="btnCourant">Euros courants</button>
+      <button class="mg" id="btnConstant">Euros d'aujourd'hui</button>
+    </div>
+    <div class="hint" id="modeHint" style="margin:-4px 0 10px"></div>
     <table id="tbl">
-      <thead><tr><th>Support</th><th>Versé</th><th>Net final</th><th>TRI net</th><th>VAN</th></tr></thead>
+      <thead><tr><th>Support</th><th>Versé</th><th>Net final</th><th>TRI</th><th>VAN</th></tr></thead>
       <tbody></tbody>
     </table>
     <div class="chart" id="chart"></div>
@@ -575,7 +639,7 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" inputmode="decimal" id="k_abat"><span class="unit">€</span></div></div>
     <div class="field"><label>Taux RELIBI sur intérêts</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="k_relibi"><span class="unit">%</span></div></div>
-    <div class="field"><label>Franchise RELIBI (par an et par agent payeur)</label>
+    <div class="field"><label>Franchise RELIBI (par contribuable et par banque, doublée en classe 2)</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="k_relibiF"><span class="unit">€</span></div></div>
     <div class="field"><label>Franchise sur bénéfice de spéculation (art. 99bis)</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="k_spec"><span class="unit">€</span></div></div>
@@ -711,14 +775,14 @@ const K = id => { const v = parseFloat(($(id).value||'').replace(',','.')); retu
 
 const DEFAUTS = {
   duree:15, actu:2,
-  p_nom:'Ménage 1', p_revenu:120000, p_classe:'2', p_cadep:'1', p_enfants:2, p_age:38,
-  c_init:15000, c_mens:150, c_taux:1.5,
+  p_nom:'Ménage 1', p_revenu:120000, p_classe:'2', p_cadep:'1', p_enfants:2, p_age:38, p_index:2, p_infl:2,
+  c_init:15000, c_mens:150, c_taux:1.5, c_banques:1,
   l_cotis:2688, l_rend:1.5, l_reinv:'1',
   a_init:50000, a_mens:200, a_croiss:5, a_div:2, a_frais:0.3,
   a_qual:'1', a_ras:15, a_spec:0,
   e_init:50000, e_mens:200, e_perf:7, e_ter:0.22, e_garde:0.15,
   e_type:'cap', e_divpart:30, e_spec:0,
-  o_init:50000, o_mens:200, o_coupon:3.2, o_frais:0.2, o_regime:'relibi',
+  o_init:50000, o_mens:200, o_coupon:3.2, o_frais:0.2, o_banques:1, o_regime:'relibi',
   v_init:50000, v_mens:200, v_rend:3.5, v_gestion:0.8, v_entree:1,
   v_prime:672, v_reinv:'1',
   b_versement:9000, b_contrats:'2', b_rend:4, b_reinv:'1', b_sortie:'capital'
@@ -828,7 +892,9 @@ function sauver(){ sauverMenage(); sauverParams(); }
 /* ================= MOTEUR ================= */
 let PROFIL={};
 
+let INDEXV = 1;   // coefficient d'indexation annuelle des versements
 function calcProfil(){
+  INDEXV = 1 + num('p_index')/100;
   IDX = K('k_index')/100;
   CADEP = K('k_cadep')/100;
   const revenu = num('p_revenu');
@@ -888,7 +954,7 @@ function simulTitres(o){
   const flux = [-o.init];
 
   for(let i=1;i<=n;i++){
-    const apports = o.mens*12;
+    const apports = o.mens*12*Math.pow(INDEXV, i-1);
     // apports lissés : moitié d'année de rendement en moyenne
     cap = cap*(1+perfNette/100) + apports*(1+perfNette/200);
     verse += apports;
@@ -970,17 +1036,21 @@ function calcETF(){
 function calcObligation(){
   const n = +$('duree').value;
   const relibi = $('o_regime').value==='relibi';
+  const nbO = Math.max(1, Math.round(num('o_banques')));
+  const FRANCHISE_O = K('k_relibiF') * (PROFIL.classe==='2' ? 2 : 1) * nbO;
+  $('o_franchiseAff').textContent = eur(FRANCHISE_O)+'  ('+nbO+' × '+eur(K('k_relibiF')*(PROFIL.classe==='2'?2:1))+')';
   const coupon = num('o_coupon'), frais = num('o_frais');
   let cap = num('o_init'), verse = num('o_init'), impots = 0;
   const mens = num('o_mens');
   const flux = [-cap];
 
   for(let i=1;i<=n;i++){
-    const apports = mens*12;
+    const apports = mens*12*Math.pow(INDEXV, i-1);
     const interets = (cap + apports/2) * coupon/100;
     let imp;
     if(relibi){
-      const b = Math.max(0, interets - K('k_relibiF'));
+      const fr = FRANCHISE_O;
+      const b = Math.max(0, interets - fr);
       imp = b * K('k_relibi')/100;
       if(PROFIL.cadepOn) imp += b * CADEP;
     }else{
@@ -1009,12 +1079,17 @@ function calcObligation(){
 function calcEpargne(){
   const n = +$('duree').value;
   const taux = num('c_taux'), mens = num('c_mens');
+  // franchise : 250 € par contribuable et par agent payeur, doublée en imposition collective
+  const banques = Math.max(1, Math.round(num('c_banques')));
+  const FRANCHISE_C = K('k_relibiF') * (PROFIL.classe==='2' ? 2 : 1) * banques;
+  $('c_franchiseAff').textContent = eur(FRANCHISE_C)+'  ('+banques+' × '+eur(K('k_relibiF')*(PROFIL.classe==='2'?2:1))+')';
+  $('c_couvertAff').textContent = taux>0 ? 'jusqu\'à '+eur(FRANCHISE_C/(taux/100))+' placés' : '—';
   let cap = num('c_init'), verse = cap, impots = 0;
   const flux = [-cap];
   for(let i=1;i<=n;i++){
-    const apports = mens*12;
+    const apports = mens*12*Math.pow(INDEXV, i-1);
     const interets = (cap + apports/2) * taux/100;
-    const base = Math.max(0, interets - K('k_relibiF'));   // franchise RELIBI
+    const base = Math.max(0, interets - FRANCHISE_C);
     let imp = base * K('k_relibi')/100;
     if(PROFIL.cadepOn) imp += base*CADEP;
     impots += imp;
@@ -1045,12 +1120,14 @@ function calcBausparen(){
   let cap=0, verse=0, economie=0;
   const flux=[0];
   for(let i=1;i<=n;i++){
-    const eco = impotSupplementaire(PROFIL.revenu - deductible, deductible, PROFIL.classe);
+    const ci = cotis*Math.pow(INDEXV, i-1);
+    const di = Math.min(ci, plafond);
+    const eco = impotSupplementaire(PROFIL.revenu - di, di, PROFIL.classe);
     economie += eco;
-    const injecte = cotis + (reinv ? eco : 0);
+    const injecte = ci + (reinv ? eco : 0);
     cap = cap*(1+rend/100) + injecte*(1+rend/200);
-    verse += cotis;
-    flux.push(-cotis + (reinv ? 0 : eco));
+    verse += ci;
+    flux.push(-ci + (reinv ? 0 : eco));
   }
   flux[n] += cap;
   RES.bauspar = {flux, verse, brut:cap, impots:0, net:cap, economie};
@@ -1081,7 +1158,7 @@ function calcAssuranceVie(){
   const flux = [-num('v_init')];
 
   for(let i=1;i<=n;i++){
-    const apports = mens*12;
+    const apports = mens*12*Math.pow(INDEXV, i-1);
     const eco = impotSupplementaire(PROFIL.revenu - primeDeduite, primeDeduite, PROFIL.classe);
     economie += eco;
     const injecte = apports*(1-fEntree) + (reinv ? eco : 0);
@@ -1120,12 +1197,14 @@ function calc111bis(){
   let cap=0, verse=0, economie=0;
   const flux=[0];
   for(let i=1;i<=n;i++){
-    const eco = impotSupplementaire(PROFIL.revenu - deductible, deductible, PROFIL.classe);
+    const vi = vers*Math.pow(INDEXV, i-1);
+    const di = Math.min(vi, plafond);          // la déduction reste bornée par le plafond légal
+    const eco = impotSupplementaire(PROFIL.revenu - di, di, PROFIL.classe);
     economie += eco;
-    const injecte = vers + (reinv ? eco : 0);
+    const injecte = vi + (reinv ? eco : 0);
     cap = cap*(1+rend/100) + injecte*(1+rend/200);
-    verse += vers;
-    flux.push(-vers + (reinv ? 0 : eco));
+    verse += vi;
+    flux.push(-vi + (reinv ? 0 : eco));
   }
 
   let impotSortie, libelleSortie;
@@ -1208,19 +1287,28 @@ const REPARTITION_TYPE = {
   c_mens:200, e_mens:600, a_mens:150, o_mens:150, v_mens:100, l_cotis:2688, b_versement:9000
 };
 
+let MODE_REEL = false;
 function afficheGlobal(){
   const tauxActu = num('actu')/100;
+  const infl = num('p_infl')/100;
+  const n = +$('duree').value;
+  const defl = Math.pow(1+infl, n);
+  $('modeHint').innerHTML = MODE_REEL
+    ? 'Capitaux ramenés au pouvoir d\'achat d\'aujourd\'hui (divisés par '+nf2.format(defl)+') et TRI corrigés de l\'inflation. Réglez le taux avec le curseur <b>Inflation</b> en haut de page : il est à '+nf2.format(infl*100)+' %.'
+    : 'Montants nominaux, tels qu\'ils figureront sur les relevés dans '+n+' ans. Ils surestiment le pouvoir d\'achat réel — touchez « Euros d\'aujourd\'hui » pour la lecture corrigée de l\'inflation.';
   const pills = [], rows = [], bars = [];
 
   SUPPORTS.forEach(s=>{
     const r = RES[s.k];
     if(!r) return;
-    const t = r.verse>0 ? tri(r.flux) : NaN;
+    const tNom = r.verse>0 ? tri(r.flux) : NaN;
+    const t = MODE_REEL ? (1+tNom)/(1+infl)-1 : tNom;
     const v = van(r.flux, tauxActu);
-    r.tri = t; r.van = v;
+    const netAff = MODE_REEL ? r.net/defl : r.net;
+    r.tri = t; r.van = v; r.netAff = netAff;
     pills.push('<div class="pill" data-go="'+s.id+'" style="border-top-color:'+s.c+'"><div class="n" style="color:'+s.c+'">'+s.court+
       '</div><div class="v">'+(isFinite(t)?nf2.format(t*100)+' %':'—')+'</div></div>');
-    bars.push({nom:s.nom, val:r.net, c:s.c});
+    bars.push({nom:s.nom, val:netAff, c:s.c});
     rows.push({s, r, t, v});
   });
 
@@ -1246,7 +1334,7 @@ function afficheGlobal(){
   $('tbl').querySelector('tbody').innerHTML = rows.map(o=>
     '<tr'+(o===best?' class="win"':'')+'><td>'+o.s.nom+'</td>'+
     '<td class="num">'+eur(o.r.verse)+'</td>'+
-    '<td class="num">'+eur(o.r.net)+'</td>'+
+    '<td class="num">'+eur(o.r.netAff)+'</td>'+
     '<td class="num">'+(isFinite(o.t)?nf2.format(o.t*100)+' %':'—')+'</td>'+
     '<td class="num">'+eur(o.v)+'</td></tr>'
   ).join('');
@@ -1265,12 +1353,15 @@ function afficheGlobal(){
   });
   svg += '</svg>';
   $('chart').innerHTML = svg;
-  $('leg').innerHTML = 'Capital net à l\'échéance, après impôt luxembourgeois.';
+  $('leg').innerHTML = MODE_REEL
+    ? 'Capital net à l\'échéance, après impôt et corrigé de l\'inflation.'
+    : 'Capital net à l\'échéance, après impôt luxembourgeois.';
 }
 
 function calcAll(){
   $('dureeV').textContent = $('duree').value;
   $('actuV').textContent = nf2.format(num('actu'));
+  $('inflV').textContent = nf2.format(num('p_infl'));
   $('e_divwrap').style.display = $('e_type').value==='dist' ? '' : 'none';
   calcProfil();
   calcEpargne();
@@ -1319,6 +1410,15 @@ CHAMPS.forEach(k=>{
   el.addEventListener('input', calcAll);
   el.addEventListener('change', calcAll);
 });
+function setMode(reel){
+  MODE_REEL = reel;
+  $('btnCourant').classList.toggle('on', !reel);
+  $('btnConstant').classList.toggle('on', reel);
+  calcAll();
+}
+$('btnCourant').addEventListener('click', ()=>setMode(false));
+$('btnConstant').addEventListener('click', ()=>setMode(true));
+
 $('typeBtn').addEventListener('click', ()=>{
   Object.entries(REPARTITION_TYPE).forEach(([k,v])=>{ const el=$(k); if(el) el.value=v; });
   calcAll();
