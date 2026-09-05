@@ -195,7 +195,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>7 poches · touchez une pastille pour ouvrir la rubrique</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 1.0 — 5 septembre 2026</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 1.2 — 5 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -283,6 +283,16 @@ footer a{color:var(--dim)}
     <div class="field"><label>Part du solde en assurance-vie art. 111</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="as_av"><span class="unit">%</span></div></div>
 
+    <div class="field"><label>Rebasculer l'épargne une fois la réserve atteinte</label>
+      <div class="wrap"><select id="as_bascule">
+        <option value="1">Oui — recalculer la répartition à ce moment-là</option>
+        <option value="0">Non — garder la même répartition sur toute la durée</option>
+      </select><span class="unit">▾</span></div>
+      <div class="hint">Une fois la réserve constituée, continuer à l'alimenter n'a plus de sens.
+        L'app calcule l'année où l'objectif est atteint et redéploie automatiquement l'effort vers
+        les autres poches à partir de là.</div>
+    </div>
+
     <div class="res" id="as_res_bloc"></div>
 
     <button class="reset" id="as_apply" style="border-color:var(--accent);color:var(--accent);margin:14px 0 0">
@@ -334,6 +344,14 @@ footer a{color:var(--dim)}
       points repris dans l'app : le plafond de l'article 111 (672 € par membre du ménage, enfants
       compris) et, indirectement, les frais de garde déductibles — à intégrer dans le revenu imposable
       ajusté saisi ci-dessus.
+    </div>
+    <div class="field">
+      <label>Progression annuelle de votre revenu</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="p_croiss"><span class="unit">%</span></div>
+      <div class="hint">Le revenu détermine le taux auquel chaque déduction est valorisée. S'il progresse
+        et que le barème est réindexé du même taux, rien ne change en termes réels — c'est le réglage
+        par défaut. Un revenu qui progresse plus vite que le barème fait monter le taux marginal, donc
+        la valeur des déductions.</div>
     </div>
     <div class="field">
       <label>Indexation annuelle des versements</label>
@@ -421,6 +439,8 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" inputmode="decimal" id="c_init"><span class="unit">€</span></div></div>
     <div class="field"><label>Versement mensuel</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="c_mens"><span class="unit">€</span></div></div>
+    <div class="field"><label>Versement mensuel après bascule <span id="c_lbl2" style="color:var(--accent)"></span></label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="c_mens2"><span class="unit">€</span></div></div>
     <div class="field"><label>Taux d'intérêt annuel</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="c_taux"><span class="unit">%</span></div></div>
 
@@ -447,6 +467,8 @@ footer a{color:var(--dim)}
   <div class="body">
     <div class="field"><label>Cotisation annuelle</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="l_cotis"><span class="unit">€</span></div></div>
+    <div class="field"><label>Cotisation annuelle après bascule <span id="l_lbl2" style="color:var(--accent)"></span></label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="l_cotis2"><span class="unit">€</span></div></div>
     <div class="field"><label>Rendement annuel du contrat</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="l_rend"><span class="unit">%</span></div></div>
     <div class="field"><label>Économie d'impôt réinvestie</label>
@@ -516,6 +538,8 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" inputmode="decimal" id="e_init"><span class="unit">€</span></div></div>
     <div class="field"><label>Versement mensuel</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="e_mens"><span class="unit">€</span></div></div>
+    <div class="field"><label>Versement mensuel après bascule <span id="e_lbl2" style="color:var(--accent)"></span></label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="e_mens2"><span class="unit">€</span></div></div>
     <div class="field"><label>Performance annuelle brute (dividendes inclus)</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="e_perf"><span class="unit">%</span></div></div>
     <div class="field"><label>Frais courants du fonds (TER)</label>
@@ -560,6 +584,8 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" inputmode="decimal" id="o_init"><span class="unit">€</span></div></div>
     <div class="field"><label>Versement mensuel</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="o_mens"><span class="unit">€</span></div></div>
+    <div class="field"><label>Versement mensuel après bascule <span id="o_lbl2" style="color:var(--accent)"></span></label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="o_mens2"><span class="unit">€</span></div></div>
     <div class="field"><label>Coupon annuel</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="o_coupon"><span class="unit">%</span></div></div>
     <div class="field"><label>Frais annuels</label>
@@ -592,6 +618,8 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" inputmode="decimal" id="v_init"><span class="unit">€</span></div></div>
     <div class="field"><label>Versement mensuel</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="v_mens"><span class="unit">€</span></div></div>
+    <div class="field"><label>Versement mensuel après bascule <span id="v_lbl2" style="color:var(--accent)"></span></label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="v_mens2"><span class="unit">€</span></div></div>
     <div class="field"><label>Rendement annuel brut</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="v_rend"><span class="unit">%</span></div></div>
     <div class="field"><label>Frais de gestion annuels</label>
@@ -625,6 +653,8 @@ footer a{color:var(--dim)}
     <div class="sect">Contrat</div>
     <div class="field"><label>Versement annuel</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="b_versement"><span class="unit">€</span></div></div>
+    <div class="field"><label>Versement annuel après bascule <span id="b_lbl2" style="color:var(--accent)"></span></label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="b_versement2"><span class="unit">€</span></div></div>
     <div class="line" style="padding:2px 0 10px"><span>Plafond déductible du ménage</span><span id="b_plafondAff">—</span></div>
     <div class="field"><label>Nombre de contrats dans le couple</label>
       <div class="wrap"><select id="b_contrats">
@@ -635,6 +665,12 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" inputmode="decimal" id="b_rend"><span class="unit">%</span></div></div>
     <div class="field"><label>Économie d'impôt réinvestie</label>
       <div class="wrap"><select id="b_reinv"><option value="1">Oui — replacée au même rendement</option><option value="0">Non — consommée</option></select><span class="unit">▾</span></div></div>
+    <div class="field"><label>Revenu imposable du ménage à la sortie</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="b_revSortie"><span class="unit">€</span></div>
+      <div class="hint">L'impôt de sortie est la <b>moitié de votre taux moyen de l'année où vous
+        encaissez</b>. En retraite les revenus baissent, donc le taux moyen aussi : sortir tard coûte
+        moins cher. Laissez 0 pour utiliser votre revenu actuel.</div>
+    </div>
     <div class="field"><label>Mode de sortie</label>
       <div class="wrap"><select id="b_sortie">
         <option value="capital">Échéance normale, capital — demi-taux global</option>
@@ -694,6 +730,8 @@ footer a{color:var(--dim)}
     <div class="sect">Barème</div>
     <div class="field"><label>Indexation du barème (100 = barème 2026 tel que codé)</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="k_index"><span class="unit">%</span></div></div>
+    <div class="field"><label>Réindexation annuelle du barème sur la durée</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="k_indexAn"><span class="unit">%</span></div></div>
     <div class="field"><label>Contribution fonds pour l'emploi — taux normal</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="k_fpe1"><span class="unit">%</span></div></div>
     <div class="field"><label>Contribution fonds pour l'emploi — taux majoré</label>
@@ -743,7 +781,7 @@ footer a{color:var(--dim)}
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 1.0 — 5 septembre 2026
+    Version 1.2 — 5 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -770,7 +808,19 @@ const TRANCHES = [
   [54090,.38],[117450,.39],[176160,.40],[234870,.41],[Infinity,.42]
 ];
 
-let IDX = 1;   // coefficient d'indexation des seuils du barème
+let IDX = 1;        // coefficient d'indexation des seuils du barème pour l'année courante
+let IDX_BASE = 1;   // valeur de référence, année 0
+let CROISS = 0;     // progression annuelle du revenu
+let IDX_AN = 0;     // réindexation annuelle du barème
+
+/* Place le barème et le revenu dans le contexte de l'année i, puis renvoie
+   le revenu imposable de cette année-là. Sans cela, une déduction serait
+   valorisée pendant 27 ans au taux marginal d'aujourd'hui. */
+function revenuAnnee(i){
+  IDX = IDX_BASE * Math.pow(1+IDX_AN, i-1);
+  return PROFIL.revenu * Math.pow(1+CROISS, i-1);
+}
+function resetContexte(){ IDX = IDX_BASE; }
 function bareme(r){
   if(r<=0) return 0;
   let imp=0, bas=0;
@@ -839,7 +889,7 @@ function ligne(l,v,cls){
 
 /* ================= ÉTAT ================= */
 const K_DEFAUTS = {
-  k_index:100, k_fpe1:7, k_fpe2:9, k_fpeS:150000,
+  k_index:100, k_indexAn:2, k_fpe1:7, k_fpe2:9, k_fpeS:150000,
   k_abat:1500, k_relibi:20, k_relibiF:250, k_spec:500, k_cadep:1.4,
   k_111bis:4500, k_111:672, k_bausJ:1344, k_baus:672
 };
@@ -848,9 +898,10 @@ const K = id => { const v = parseFloat(($(id).value||'').replace(',','.')); retu
 
 const DEFAUTS = {
   duree:15, actu:2,
-  p_nom:'Ménage 1', p_revenu:120000, p_classe:'2', p_cadep:'1', p_enfants:2, p_age:38, p_index:2, p_infl:2,
+  p_nom:'Ménage 1', p_revenu:120000, p_classe:'2', p_cadep:'1', p_enfants:2, p_age:38, p_index:2, p_infl:2, p_croiss:2,
   as_net:120000, as_cap:400, as_dep:4500, as_res:15000, as_projet:'imminent',
-  as_mois:4, as_proj:70, as_pv:35, as_av:35, as_place:0,
+  as_mois:4, as_proj:70, as_pv:35, as_av:35, as_place:0, as_bascule:'1', as_an:1,
+  c_mens2:150, e_mens2:200, o_mens2:200, v_mens2:200, b_versement2:9000, l_cotis2:0,
   c_init:0, c_mens:150, c_taux:1.5, c_banques:1,
   l_cotis:2688, l_rend:1.5, l_reinv:'1',
   a_init:0, a_mens:200, a_croiss:5, a_div:2, a_frais:0.3,
@@ -860,7 +911,7 @@ const DEFAUTS = {
   o_init:0, o_mens:200, o_coupon:3.2, o_frais:0.2, o_banques:1, o_regime:'relibi',
   v_init:0, v_mens:200, v_rend:3.5, v_gestion:0.8, v_entree:1,
   v_prime:672, v_reinv:'1',
-  b_versement:9000, b_contrats:'2', b_rend:4, b_reinv:'1', b_sortie:'capital'
+  b_versement:9000, b_contrats:'2', b_revSortie:0, b_rend:4, b_reinv:'1', b_sortie:'capital'
 };
 const CHAMPS = Object.keys(DEFAUTS);
 
@@ -968,9 +1019,19 @@ function sauver(){ sauverMenage(); sauverParams(); }
 let PROFIL={};
 
 let INDEXV = 1;   // coefficient d'indexation annuelle des versements
+let AN_BASCULE = 0;   // 0 = pas de bascule ; sinon dernière année de la phase 1
+
+/* Versement de l'année i : phase 1 jusqu'à l'année de bascule, phase 2 ensuite. */
+function vers(i, v1, v2){
+  const base = (AN_BASCULE>0 && i>AN_BASCULE) ? v2 : v1;
+  return base*Math.pow(INDEXV, i-1);
+}
 function calcProfil(){
   INDEXV = 1 + num('p_index')/100;
-  IDX = K('k_index')/100;
+  IDX_BASE = K('k_index')/100;
+  IDX = IDX_BASE;
+  CROISS = num('p_croiss')/100;
+  IDX_AN = K('k_indexAn')/100;
   CADEP = K('k_cadep')/100;
   const revenu = num('p_revenu');
   const classe = $('p_classe').value;
@@ -1003,10 +1064,11 @@ function calcProfil(){
 }
 
 /* Impôt annuel sur un revenu de capitaux mobiliers (dividendes / intérêts au barème) */
-function impotRCM(brut, qualifiant){
+function impotRCM(brut, qualifiant, annee){
   const base = qualifiant ? brut*0.5 : brut;
   const imposable = Math.max(0, base - PROFIL.abattementRCM);
-  const ir = impotSupplementaire(PROFIL.revenu, imposable, PROFIL.classe);
+  const rev = annee ? revenuAnnee(annee) : PROFIL.revenu;
+  const ir = impotSupplementaire(rev, imposable, PROFIL.classe);
   const dep = PROFIL.cadep * Math.max(0, base - PROFIL.abattementRCM);
   return ir + dep;
 }
@@ -1029,14 +1091,14 @@ function simulTitres(o){
   const flux = [-o.init];
 
   for(let i=1;i<=n;i++){
-    const apports = o.mens*12*Math.pow(INDEXV, i-1);
+    const apports = vers(i, o.mens*12, o.mens2*12);
     // apports lissés : moitié d'année de rendement en moyenne
     cap = cap*(1+perfNette/100) + apports*(1+perfNette/200);
     verse += apports;
 
     if(o.revenuAnnuelPct>0){
       const brut = cap * o.revenuAnnuelPct/100;
-      const impLU = o.revenuImposable ? impotRCM(brut, o.qualifiant) : 0;
+      const impLU = o.revenuImposable ? impotRCM(brut, o.qualifiant, i) : 0;
       const ras = brut * (o.rasPct||0)/100;
       // la retenue étrangère s'impute sur l'impôt luxembourgeois ; l'excédent
       // n'est pas restituable au Luxembourg (réclamation auprès de l'État source)
@@ -1050,6 +1112,7 @@ function simulTitres(o){
     flux.push(-apports);
   }
 
+  resetContexte();
   const pvBrute = Math.max(0, cap - verse);
   const gainSpec = pvBrute * (o.partSpec/100);
   const impSpec = impotSpeculation(gainSpec);
@@ -1065,7 +1128,7 @@ const RES = {};
 function calcAction(){
   const n = +$('duree').value;
   const r = simulTitres({
-    duree:n, init:num('a_init'), mens:num('a_mens'),
+    duree:n, init:num('a_init'), mens:num('a_mens'), mens2:num('a_mens'),
     perf:num('a_croiss'), frais:num('a_frais'),
     revenuAnnuelPct:num('a_div'), revenuImposable:true, revenuInclus:false,
     qualifiant: $('a_qual').value==='1',
@@ -1090,7 +1153,7 @@ function calcETF(){
   const perf = num('e_perf');
   const divPct = dist ? perf*num('e_divpart')/100 : 0;
   const r = simulTitres({
-    duree:n, init:num('e_init'), mens:num('e_mens'),
+    duree:n, init:num('e_init'), mens:num('e_mens'), mens2:num('e_mens2'),
     perf:perf, frais:num('e_ter')+num('e_garde'),
     revenuAnnuelPct:divPct, revenuImposable:dist, revenuInclus:true,
     qualifiant:false, rasPct:0, partSpec:num('e_spec')
@@ -1120,7 +1183,7 @@ function calcObligation(){
   const flux = [-cap];
 
   for(let i=1;i<=n;i++){
-    const apports = mens*12*Math.pow(INDEXV, i-1);
+    const apports = vers(i, mens*12, num('o_mens2')*12);
     const interets = (cap + apports/2) * coupon/100;
     let imp;
     if(relibi){
@@ -1129,7 +1192,7 @@ function calcObligation(){
       imp = b * K('k_relibi')/100;
       if(PROFIL.cadepOn) imp += b * CADEP;
     }else{
-      imp = impotRCM(interets, false);
+      imp = impotRCM(interets, false, i);
     }
     impots += imp;
     cap = cap*(1-frais/100) + apports + interets - imp;
@@ -1162,7 +1225,7 @@ function calcEpargne(){
   let cap = num('c_init'), verse = cap, impots = 0;
   const flux = [-cap];
   for(let i=1;i<=n;i++){
-    const apports = mens*12*Math.pow(INDEXV, i-1);
+    const apports = vers(i, mens*12, num('c_mens2')*12);
     const interets = (cap + apports/2) * taux/100;
     const base = Math.max(0, interets - FRANCHISE_C);
     let imp = base * K('k_relibi')/100;
@@ -1195,9 +1258,10 @@ function calcBausparen(){
   let cap=0, verse=0, economie=0;
   const flux=[0];
   for(let i=1;i<=n;i++){
-    const ci = cotis*Math.pow(INDEXV, i-1);
+    const ci = vers(i, cotis, num('l_cotis2'));
     const di = Math.min(ci, plafond);
-    const eco = impotSupplementaire(PROFIL.revenu - di, di, PROFIL.classe);
+    const ri = revenuAnnee(i);
+    const eco = impotSupplementaire(ri - di, di, PROFIL.classe);
     economie += eco;
     const injecte = ci + (reinv ? eco : 0);
     cap = cap*(1+rend/100) + injecte*(1+rend/200);
@@ -1233,8 +1297,8 @@ function calcAssuranceVie(){
   const flux = [-num('v_init')];
 
   for(let i=1;i<=n;i++){
-    const apports = mens*12*Math.pow(INDEXV, i-1);
-    const eco = impotSupplementaire(PROFIL.revenu - primeDeduite, primeDeduite, PROFIL.classe);
+    const apports = vers(i, mens*12, num('v_mens2')*12);
+    const eco = impotSupplementaire(revenuAnnee(i) - primeDeduite, primeDeduite, PROFIL.classe);
     economie += eco;
     const injecte = apports*(1-fEntree) + (reinv ? eco : 0);
     cap = cap*(1+rend/100) + injecte*(1+rend/200);
@@ -1260,11 +1324,11 @@ function calcAssuranceVie(){
 
 function calc111bis(){
   const n = +$('duree').value;
-  const vers = num('b_versement');
+  const versA = num('b_versement');
   const contrats = parseInt($('b_contrats').value,10) || 1;
   const plafond = K('k_111bis') * contrats;
   $('b_plafondAff').textContent = eur(plafond)+'  ('+contrats+' × '+eur(K('k_111bis'))+')';
-  const deductible = Math.min(vers, plafond);
+  const deductible = Math.min(versA, plafond);
   const rend = num('b_rend');
   const reinv = $('b_reinv').value==='1';
   const mode = $('b_sortie').value;
@@ -1272,9 +1336,10 @@ function calc111bis(){
   let cap=0, verse=0, economie=0;
   const flux=[0];
   for(let i=1;i<=n;i++){
-    const vi = vers*Math.pow(INDEXV, i-1);
+    const vi = vers(i, versA, num('b_versement2'));
     const di = Math.min(vi, plafond);          // la déduction reste bornée par le plafond légal
-    const eco = impotSupplementaire(PROFIL.revenu - di, di, PROFIL.classe);
+    const ri = revenuAnnee(i);
+    const eco = impotSupplementaire(ri - di, di, PROFIL.classe);
     economie += eco;
     const injecte = vi + (reinv ? eco : 0);
     cap = cap*(1+rend/100) + injecte*(1+rend/200);
@@ -1282,18 +1347,24 @@ function calc111bis(){
     flux.push(-vi + (reinv ? 0 : eco));
   }
 
+  // revenu de l'année de sortie : saisi, sinon le revenu actuel projeté
+  const revS = num('b_revSortie') > 0 ? num('b_revSortie') : PROFIL.revenu;
+  IDX = IDX_BASE * Math.pow(1+IDX_AN, n);       // barème de l'année de sortie
+  const tmS = revS>0 ? impotClasse(revS,PROFIL.classe)*(1+tauxFPE(revS,PROFIL.classe))/revS : 0;
+
   let impotSortie, libelleSortie;
   if(mode==='capital'){
-    impotSortie = cap * (PROFIL.tauxMoyen/2);                       // demi-taux global
-    libelleSortie = 'Impôt de sortie (demi-taux global '+pct(PROFIL.tauxMoyen/2)+')';
+    impotSortie = cap * (tmS/2);                                    // demi-taux global
+    libelleSortie = 'Impôt de sortie (demi-taux global '+pct(tmS/2)+')';
   }else if(mode==='rente'){
-    impotSortie = impotSupplementaire(PROFIL.revenu, cap*0.5, PROFIL.classe);
+    impotSortie = impotSupplementaire(revS, cap*0.5, PROFIL.classe);
     libelleSortie = 'Impôt sur rente (moitié imposable)';
   }else{
     // rachat anticipé non autorisé : tarif normal plein sur le capital remboursé
-    impotSortie = impotSupplementaire(PROFIL.revenu, cap, PROFIL.classe);
+    impotSortie = impotSupplementaire(revS, cap, PROFIL.classe);
     libelleSortie = 'Impôt de sortie (tarif normal plein)';
   }
+  resetContexte();
   const net = cap - impotSortie;
   flux[n] += net;
   const r = {flux, verse, brut:cap, impots:impotSortie, net, economie};
@@ -1313,8 +1384,8 @@ function calc111bis(){
     (mode==='anticipe'
       ? '<span class="tag bad">Avantage fiscal repris — imposition au tarif normal</span>'
       : (deductible>0 ? '<span class="tag ok">Déduction immédiate au taux marginal</span>' : '')) +
-    (vers > plafond
-      ? '<div class="hint" style="color:#f87171">Versement supérieur au plafond : '+eur(vers-plafond)+' par an ne sont pas déductibles et restent bloqués jusqu\'à 60 ans.</div>'
+    (versA > plafond
+      ? '<div class="hint" style="color:#f87171">Versement supérieur au plafond : '+eur(versA-plafond)+' par an ne sont pas déductibles et restent bloqués jusqu\'à 60 ans.</div>'
       : '') +
     alerte;
 }
@@ -1367,7 +1438,7 @@ function assistant(){
     const effort = Math.min(reste, Math.max(manque/24, cap*0.4));
     a.epargne += effort; reste -= effort;
     notes.push(['Compte d\'épargne', effort,
-      'Votre capital mobilisable ('+eur(mobilisable)+') ne couvre pas la réserve visée de '+eur(cible)+' : il manque '+eur(manque)+'. Cette poche comble le trou en environ deux ans. Rien d\'autre ne devrait passer avant.']);
+      'Votre capital mobilisable ('+eur(mobilisable)+') ne couvre pas la réserve visée de '+eur(cible)+' : il manque '+eur(manque)+'. Rien d\'autre ne devrait passer avant.']);
   } else {
     const effort = cap*0.10;
     a.epargne += effort; reste -= effort;
@@ -1419,6 +1490,16 @@ function assistant(){
     reste = 0;
   }
 
+  // ---- année où la réserve sera atteinte ----
+  // effort mensuel dirigé vers l'épargne pendant la phase 1
+  const effortMensuel = a.epargne + (projet==='imminent' ? 0 : 0);
+  AN_BASCULE = 0;
+  let anBascule = 0;
+  if($('as_bascule').value==='1' && manque > 0 && effortMensuel > 0){
+    anBascule = Math.max(1, Math.ceil(manque / (effortMensuel*12)));
+    AN_BASCULE = Math.min(anBascule, +$('duree').value);
+  }
+
   // ---- ventilation du capital déjà constitué ----
   // Contrainte majeure : ni le 111bis ni l'épargne-logement n'acceptent de versement
   // exceptionnel au-delà de leur plafond annuel. Le capital existant ne peut donc
@@ -1433,6 +1514,18 @@ function assistant(){
   }
   if(rk > 0){ const x = rk*Math.max(0,Math.min(100,num('as_av')))/100; k.av += x; rk -= x; }
   if(rk > 0){ k.etf += rk; rk = 0; }
+
+  // ---- répartition de phase 2 : la réserve est constituée ----
+  const b2 = {epargne:cap*0.10, obligation:0, pv:0, av:0, bauspar:0, etf:0};
+  {
+    let r2 = cap - b2.epargne;
+    if(projet==='moyen'){ const d = r2*partProj; b2.obligation += d; r2 -= d; }
+    else if(projet==='long'){ const x = Math.min(r2*partProj, plBausM); b2.bauspar += x; r2 -= x; }
+    else if(projet==='imminent'){ const l = r2*partProj; b2.epargne += l; r2 -= l; }
+    const p2 = Math.min(r2, pl111bisM, cap*partMax); b2.pv += p2; r2 -= p2;
+    const a2 = Math.min(r2*Math.max(0,Math.min(100,num('as_av')))/100, pl111M); b2.av += a2; r2 -= a2;
+    if(r2 > 0) b2.etf += r2;
+  }
 
   // rendu
   const total = cap || 1;
@@ -1458,17 +1551,32 @@ function assistant(){
     html += '<tr><td>'+nom+'</td><td class="num">'+nf.format(Math.round(v))+' €</td><td class="num">'+nf2.format(v/total*100)+' %</td></tr>';
   });
   html += '</tbody></table>';
+  if(AN_BASCULE > 0){
+    const libB = {epargne:'Compte d\'épargne', obligation:'Dépôts à terme', pv:'Prévoyance 111bis',
+                  av:'Assurance-vie art. 111', bauspar:'Épargne-logement', etf:'ETF capitalisant'};
+    html += '<div class="sect" style="margin:16px 0 6px;font-size:13px">À partir de l\'année '+(AN_BASCULE+1)+' — réserve constituée</div>';
+    html += '<table><thead><tr><th>Poche</th><th>€/mois</th><th>Part</th></tr></thead><tbody>';
+    Object.entries(b2).forEach(([key,v])=>{
+      if(v < 0.5) return;
+      html += '<tr><td>'+libB[key]+'</td><td class="num">'+nf.format(Math.round(v))+' €</td><td class="num">'+nf2.format(v/total*100)+' %</td></tr>';
+    });
+    html += '</tbody></table>';
+    const suite = projet==='imminent'
+      ? 'l\'effort reste majoritairement liquide, puisque l\'achat peut survenir à tout moment'
+      : 'l\'effort bascule vers les poches de rendement';
+    html += '<div class="hint" style="margin-top:8px">La réserve de '+eur(cible)+' sera atteinte au bout de '+AN_BASCULE+' an'+(AN_BASCULE>1?'s':'')+'. Continuer à l\'alimenter n\'aurait alors plus de sens : '+suite+'. Chaque rubrique porte un champ « après bascule » que vous pouvez modifier.</div>';
+  }
   notes.forEach(([nom,v,txt])=>{
     if(v < 0.5) return;
     html += '<div class="hint" style="margin-top:10px"><b style="color:var(--accent)">'+nom+' — '+nf.format(Math.round(v))+' €</b><br>'+txt+'</div>';
   });
   $('as_res_bloc').innerHTML = html;
 
-  return {a, k, ria};
+  return {a, b2, k, ria, anBascule:AN_BASCULE};
 }
 
 function appliquerAssistant(){
-  const {a, k, ria} = assistant();
+  const {a, b2, k, ria} = assistant();
   $('p_revenu').value = Math.round(ria);
   $('c_init').value = Math.round(k.epargne);
   $('o_init').value = Math.round(k.obligation);
@@ -1482,6 +1590,12 @@ function appliquerAssistant(){
   $('a_mens').value = 0;
   $('b_versement').value = Math.round(a.pv*12);
   $('l_cotis').value = Math.round(a.bauspar*12);
+  $('c_mens2').value = Math.round(b2.epargne);
+  $('o_mens2').value = Math.round(b2.obligation);
+  $('e_mens2').value = Math.round(b2.etf);
+  $('v_mens2').value = Math.round(b2.av);
+  $('b_versement2').value = Math.round(b2.pv*12);
+  $('l_cotis2').value = Math.round(b2.bauspar*12);
   calcAll();
   $('card-assistant').scrollIntoView({behavior:'smooth', block:'start'});
 }
@@ -1614,6 +1728,8 @@ function calcAll(){
   calcObligation();
   calcAssuranceVie();
   calc111bis();
+  const lbl = AN_BASCULE>0 ? '(dès l\'année '+(AN_BASCULE+1)+')' : '(aucune bascule)';
+  ['c','e','o','v','b','l'].forEach(x=>{ const el=$(x+'_lbl2'); if(el) el.textContent = lbl; });
   afficheAllocation();
   afficheGlobal();
   renderMenages();
