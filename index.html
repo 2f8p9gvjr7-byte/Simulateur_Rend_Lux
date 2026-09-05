@@ -195,6 +195,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>7 poches · touchez une pastille pour ouvrir la rubrique</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 1.0 — 5 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -225,6 +226,75 @@ footer a{color:var(--dim)}
   Au Luxembourg l'impôt est <b>progressif</b> : commence par le <b>profil fiscal</b> ci-dessous, il alimente
   tous les autres modules. Les plus-values sur titres détenus <b>plus de 6 mois</b> sont exonérées — c'est
   le paramètre qui change tout par rapport à la France.
+</div>
+
+
+<!-- ============ ASSISTANT ============ -->
+<div class="card" id="card-assistant" style="border-top-color:var(--accent)">
+  <h2>Par où commencer <span class="sub">répartition proposée</span></h2>
+  <div class="body">
+    <div class="note" style="margin:0 0 14px">
+      Répondez à cinq questions simples. L'app propose une répartition, l'explique ligne par ligne,
+      et remplit toutes les rubriques si elle vous convient. Vous pourrez ensuite ajuster ce que
+      vous voulez.
+    </div>
+
+    <div class="field"><label>1. Revenu net encaissé par le ménage, par an</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_net"><span class="unit">€</span></div>
+      <div class="hint">Ce que vous touchez réellement, virements sur le compte. L'app en déduit le
+        revenu imposable — pas besoin de le connaître.</div>
+    </div>
+
+    <div class="field"><label>2. Ce que vous pouvez épargner chaque mois</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_cap"><span class="unit">€</span></div></div>
+
+    <div class="field"><label>3. Vos dépenses courantes mensuelles</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_dep"><span class="unit">€</span></div></div>
+
+    <div class="field"><label>4. Épargne déjà disponible immédiatement</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_res"><span class="unit">€</span></div></div>
+
+    <div class="field"><label>5. Épargne déjà placée et mobilisable</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_place"><span class="unit">€</span></div>
+      <div class="hint">Comptes-titres, dépôts arrivant à échéance, livrets d'appoint. N'y mettez
+        pas ce qui est immobilisé dans un 111bis, un Bauspar ou une assurance-vie en cours — ces
+        contrats ne se redéploient pas, saisissez-les directement dans leurs rubriques.</div>
+    </div>
+
+    <div class="field"><label>6. Projet immobilier</label>
+      <div class="wrap"><select id="as_projet">
+        <option value="imminent">Achat possible dans les 2 ans</option>
+        <option value="moyen">Achat dans 2 à 8 ans</option>
+        <option value="long">Achat au-delà de 8 ans</option>
+        <option value="aucun">Aucun projet immobilier</option>
+      </select><span class="unit">▾</span></div></div>
+
+    <div class="sect">Ajuster la proposition</div>
+    <div class="hint" style="margin:-4px 0 10px">
+      Ces trois curseurs se préremplissent selon le projet choisi ci-dessus, puis vous les modifiez
+      librement. Tout ce qui n'est pas absorbé par eux part en ETF.
+    </div>
+    <div class="field"><label>Mois de dépenses à garder en réserve</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_mois"><span class="unit">mois</span></div></div>
+    <div class="field"><label>Part de l'effort orientée vers le projet ou la sécurité</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_proj"><span class="unit">%</span></div></div>
+    <div class="field"><label>Part maximale bloquée en prévoyance 111bis</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_pv"><span class="unit">%</span></div></div>
+    <div class="field"><label>Part du solde en assurance-vie art. 111</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_av"><span class="unit">%</span></div></div>
+
+    <div class="res" id="as_res_bloc"></div>
+
+    <button class="reset" id="as_apply" style="border-color:var(--accent);color:var(--accent);margin:14px 0 0">
+      Appliquer cette répartition
+    </button>
+
+    <div class="hint" style="margin-top:12px">
+      Ce n'est pas un conseil personnalisé : c'est une répartition construite sur des règles simples,
+      toutes explicitées ci-dessus. Elle ignore votre tolérance au risque, votre situation
+      professionnelle et vos projets non immobiliers. Elle sert de point de départ, pas de décision.
+    </div>
+  </div>
 </div>
 
 <!-- ============ PROFIL FISCAL ============ -->
@@ -672,6 +742,9 @@ footer a{color:var(--dim)}
 <button class="reset" id="reset">Réinitialiser toutes les valeurs</button>
 
 <footer>
+  <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
+    Version 1.0 — 5 septembre 2026
+  </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
   l'objet d'ajustements d'indexation, et les crédits d'impôt personnels ne sont pas pris en compte.
@@ -776,14 +849,16 @@ const K = id => { const v = parseFloat(($(id).value||'').replace(',','.')); retu
 const DEFAUTS = {
   duree:15, actu:2,
   p_nom:'Ménage 1', p_revenu:120000, p_classe:'2', p_cadep:'1', p_enfants:2, p_age:38, p_index:2, p_infl:2,
-  c_init:15000, c_mens:150, c_taux:1.5, c_banques:1,
+  as_net:120000, as_cap:400, as_dep:4500, as_res:15000, as_projet:'imminent',
+  as_mois:4, as_proj:70, as_pv:35, as_av:35, as_place:0,
+  c_init:0, c_mens:150, c_taux:1.5, c_banques:1,
   l_cotis:2688, l_rend:1.5, l_reinv:'1',
-  a_init:50000, a_mens:200, a_croiss:5, a_div:2, a_frais:0.3,
+  a_init:0, a_mens:200, a_croiss:5, a_div:2, a_frais:0.3,
   a_qual:'1', a_ras:15, a_spec:0,
-  e_init:50000, e_mens:200, e_perf:7, e_ter:0.22, e_garde:0.15,
+  e_init:0, e_mens:200, e_perf:7, e_ter:0.22, e_garde:0.15,
   e_type:'cap', e_divpart:30, e_spec:0,
-  o_init:50000, o_mens:200, o_coupon:3.2, o_frais:0.2, o_banques:1, o_regime:'relibi',
-  v_init:50000, v_mens:200, v_rend:3.5, v_gestion:0.8, v_entree:1,
+  o_init:0, o_mens:200, o_coupon:3.2, o_frais:0.2, o_banques:1, o_regime:'relibi',
+  v_init:0, v_mens:200, v_rend:3.5, v_gestion:0.8, v_entree:1,
   v_prime:672, v_reinv:'1',
   b_versement:9000, b_contrats:'2', b_rend:4, b_reinv:'1', b_sortie:'capital'
 };
@@ -1244,6 +1319,173 @@ function calc111bis(){
     alerte;
 }
 
+
+/* ================= ASSISTANT =================
+   Convertit un net encaissé en revenu imposable, puis répartit la capacité
+   d'épargne selon des règles explicites. Rien n'est optimisé au sens
+   mathématique : ce sont des priorités de bon sens, ordonnées. */
+
+function netVersImposable(net, classe){
+  // recherche du revenu imposable dont découle ce net, par dichotomie.
+  // hypothèses : cotisations sociales 11,45 % du brut, CADEP 1,4 %, frais forfaitaires.
+  let lo = net, hi = net*2.5;
+  for(let i=0;i<80;i++){
+    const brut = (lo+hi)/2;
+    const soc = brut*0.1145;
+    const ria = brut - soc - 540;          // minimum forfaitaire frais d'obtention
+    const dep = ria*0.014;
+    const calc = brut - soc - dep - impotClasse(ria,classe)*(1+tauxFPE(ria,classe));
+    if(calc < net) lo = brut; else hi = brut;
+  }
+  const brut = (lo+hi)/2;
+  return Math.max(0, brut - brut*0.1145 - 540);
+}
+
+function assistant(){
+  const cap = num('as_cap'), dep = num('as_dep'), res = num('as_res');
+  const projet = $('as_projet').value;
+  const classe = $('p_classe').value;
+  const adultes = classe==='2' ? 2 : 1;
+  const membres = adultes + Math.max(0, num('p_enfants'));
+
+  const ria = netVersImposable(num('as_net'), classe);
+  const cible = dep*Math.max(0, num('as_mois'));
+  const mobilisable = res + num('as_place');
+  // le manque s'apprécie sur l'ensemble du capital mobilisable : une épargne placée
+  // mais récupérable compte comme réserve dès lors qu'on la bascule en liquide.
+  const manque = Math.max(0, cible - mobilisable);
+  const pl111bisM = K('k_111bis')*adultes/12;
+  const pl111M    = K('k_111')*membres/12;
+  const plBausM   = (num('p_age')<41 ? K('k_bausJ') : K('k_baus'))*membres/12;
+
+  let reste = cap;
+  const a = {epargne:0, obligation:0, pv:0, av:0, bauspar:0, etf:0};
+  const notes = [];
+
+  // 1 — reconstituer la réserve de précaution
+  if(manque > 0){
+    const effort = Math.min(reste, Math.max(manque/24, cap*0.4));
+    a.epargne += effort; reste -= effort;
+    notes.push(['Compte d\'épargne', effort,
+      'Votre capital mobilisable ('+eur(mobilisable)+') ne couvre pas la réserve visée de '+eur(cible)+' : il manque '+eur(manque)+'. Cette poche comble le trou en environ deux ans. Rien d\'autre ne devrait passer avant.']);
+  } else {
+    const effort = cap*0.10;
+    a.epargne += effort; reste -= effort;
+    notes.push(['Compte d\'épargne', effort,
+      'Votre capital mobilisable ('+eur(mobilisable)+') couvre déjà la réserve de '+eur(cible)+'. On maintient un filet mensuel, sans plus : le rendement réel du compte d\'épargne est négatif.']);
+  }
+
+  // 2 — le projet immobilier commande tout le reste
+  const partProj = Math.max(0, Math.min(100, num('as_proj')))/100;
+  if(projet==='imminent'){
+    const liq = reste*partProj;
+    a.epargne += liq; reste -= liq;
+    notes.push(['Liquidités du projet', liq,
+      'Un achat possible sous deux ans interdit tout blocage et tout risque de marché. Cet argent doit pouvoir partir chez le notaire du jour au lendemain.']);
+  } else if(projet==='moyen'){
+    const dat = reste*partProj;
+    a.obligation += dat; reste -= dat;
+    notes.push(['Dépôts à terme', dat,
+      'Horizon connu de 2 à 8 ans : le capital est garanti et l\'échéance se cale sur l\'achat. Rendement modeste, mais aucune chance de devoir vendre à perte.']);
+  } else if(projet==='long'){
+    const b = Math.min(reste*partProj, plBausM);
+    a.bauspar += b; reste -= b;
+    notes.push(['Épargne-logement', b,
+      'Achat au-delà de 8 ans : le contrat aura sa maturité de 10 ans, la contrainte disparaît. Déduction jusqu\'à '+eur(plBausM)+' par mois, et le plafond double tant que le plus jeune conjoint a moins de 41 ans.']);
+  }
+
+  // 3 — prévoyance 111bis, plafonnée et bornée en part de l'effort
+  const partMax = Math.max(0, Math.min(100, num('as_pv')))/100;
+  const pv = Math.min(reste, pl111bisM, cap*partMax);
+  if(pv > 0){
+    a.pv += pv; reste -= pv;
+    notes.push(['Prévoyance 111bis', pv,
+      'Déductible au taux marginal, donc le meilleur rendement immédiat. Mais bloqué jusqu\'à 60 ans : jamais au-delà du plafond de '+eur(pl111bisM)+' par mois, et jamais au point d\'assécher le reste.']);
+  }
+
+  // 4 — assurance-vie art. 111, souple et déductible
+  const av = Math.min(reste*Math.max(0, Math.min(100, num('as_av')))/100, pl111M);
+  if(av > 0.5){
+    a.av += av; reste -= av;
+    notes.push(['Assurance-vie art. 111', av,
+      'Déductible jusqu\'à '+eur(pl111M)+' par mois, sans blocage ni âge de sortie, non imposée au rachat. Ce plafond est partagé avec vos primes RC et santé.']);
+  }
+
+  // 5 — le solde en ETF capitalisant
+  if(reste > 0.5){
+    a.etf += reste;
+    notes.push(['ETF capitalisant', reste,
+      'Aucune imposition au Luxembourg : ni pendant l\'épargne, ni sur la plus-value après 6 mois de détention. C\'est la poche de rendement, à horizon 8 ans minimum.']);
+    reste = 0;
+  }
+
+  // ---- ventilation du capital déjà constitué ----
+  // Contrainte majeure : ni le 111bis ni l'épargne-logement n'acceptent de versement
+  // exceptionnel au-delà de leur plafond annuel. Le capital existant ne peut donc
+  // aller que vers l'épargne, les dépôts à terme, l'assurance-vie ou les titres.
+  const k = {epargne:0, obligation:0, av:0, etf:0};
+  let rk = mobilisable;
+  const socle = Math.min(rk, cible);
+  k.epargne += socle; rk -= socle;
+  if(rk > 0){
+    if(projet==='imminent'){ k.epargne += rk; rk = 0; }
+    else if(projet==='moyen'){ const d = rk*partProj; k.obligation += d; rk -= d; }
+  }
+  if(rk > 0){ const x = rk*Math.max(0,Math.min(100,num('as_av')))/100; k.av += x; rk -= x; }
+  if(rk > 0){ k.etf += rk; rk = 0; }
+
+  // rendu
+  const total = cap || 1;
+  let html = '<div class="line"><span>Revenu imposable estimé</span><span>'+eur(ria)+'</span></div>';
+  html += '<div class="line"><span>Réserve visée ('+nf2.format(num('as_mois'))+' mois)</span><span>'+eur(cible)+'</span></div>';
+  html += '<div class="line"><span>Capital mobilisable</span><span>'+eur(mobilisable)+'</span></div>';
+  html += '<div class="line"><span>'+(manque>0?'Reste à constituer':'Réserve déjà couverte')+'</span><span>'+(manque>0?eur(manque):'✓')+'</span></div>';
+  html += '<div class="line" style="margin-bottom:8px"><span>Effort réparti</span><span>'+eur(cap)+' / mois</span></div>';
+  if(mobilisable > 0){
+    html += '<div class="sect" style="margin:14px 0 6px;font-size:13px">Capital déjà constitué — '+eur(mobilisable)+'</div>';
+    html += '<table><thead><tr><th>Poche</th><th>Montant</th></tr></thead><tbody>';
+    const libK = {epargne:'Compte d\'épargne', obligation:'Dépôts à terme', av:'Assurance-vie', etf:'ETF capitalisant'};
+    Object.entries(k).forEach(([key,v])=>{
+      if(v < 1) return;
+      html += '<tr><td>'+libK[key]+'</td><td class="num">'+eur(v)+'</td></tr>';
+    });
+    html += '</tbody></table>';
+    html += '<div class="hint" style="margin-top:8px">Le socle de '+eur(Math.min(mobilisable,cible))+' reste liquide : c\'est votre réserve. Le reste suit la même logique que les versements. Ni le 111bis ni l\'épargne-logement n\'apparaissent ici — ils n\'acceptent aucun versement exceptionnel au-delà de leur plafond annuel. Revendre des titres pour les redéployer ne coûte rien fiscalement au Luxembourg dès lors qu\'ils sont détenus depuis plus de six mois.</div>';
+    html += '<div class="sect" style="margin:16px 0 6px;font-size:13px">Versements mensuels</div>';
+  }
+  html += '<table><thead><tr><th>Poche</th><th>€/mois</th><th>Part</th></tr></thead><tbody>';
+  notes.forEach(([nom,v])=>{
+    html += '<tr><td>'+nom+'</td><td class="num">'+nf.format(Math.round(v))+' €</td><td class="num">'+nf2.format(v/total*100)+' %</td></tr>';
+  });
+  html += '</tbody></table>';
+  notes.forEach(([nom,v,txt])=>{
+    if(v < 0.5) return;
+    html += '<div class="hint" style="margin-top:10px"><b style="color:var(--accent)">'+nom+' — '+nf.format(Math.round(v))+' €</b><br>'+txt+'</div>';
+  });
+  $('as_res_bloc').innerHTML = html;
+
+  return {a, k, ria};
+}
+
+function appliquerAssistant(){
+  const {a, k, ria} = assistant();
+  $('p_revenu').value = Math.round(ria);
+  $('c_init').value = Math.round(k.epargne);
+  $('o_init').value = Math.round(k.obligation);
+  $('v_init').value = Math.round(k.av);
+  $('e_init').value = Math.round(k.etf);
+  $('a_init').value = 0;
+  $('c_mens').value = Math.round(a.epargne);
+  $('o_mens').value = Math.round(a.obligation);
+  $('e_mens').value = Math.round(a.etf);
+  $('v_mens').value = Math.round(a.av);
+  $('a_mens').value = 0;
+  $('b_versement').value = Math.round(a.pv*12);
+  $('l_cotis').value = Math.round(a.bauspar*12);
+  calcAll();
+  $('card-assistant').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
 /* ================= AFFICHAGE GLOBAL ================= */
 const SUPPORTS = [
   {k:'epargne', nom:'Épargne',      court:'ÉPARGNE',     c:'#5eead4', id:'card-epargne'},
@@ -1364,6 +1606,7 @@ function calcAll(){
   $('inflV').textContent = nf2.format(num('p_infl'));
   $('e_divwrap').style.display = $('e_type').value==='dist' ? '' : 'none';
   calcProfil();
+  assistant();
   calcEpargne();
   calcBausparen();
   calcAction();
@@ -1416,6 +1659,18 @@ function setMode(reel){
   $('btnConstant').classList.toggle('on', reel);
   calcAll();
 }
+const PRESETS_PROJET = {
+  imminent: {as_proj:70, as_pv:35, as_av:35},
+  moyen:    {as_proj:45, as_pv:50, as_av:35},
+  long:     {as_proj:35, as_pv:70, as_av:35},
+  aucun:    {as_proj:0,  as_pv:70, as_av:35}
+};
+$('as_projet').addEventListener('change', ()=>{
+  const pr = PRESETS_PROJET[$('as_projet').value];
+  Object.entries(pr).forEach(([k,v])=>{ $(k).value = v; });
+  calcAll();
+});
+$('as_apply').addEventListener('click', appliquerAssistant);
 $('btnCourant').addEventListener('click', ()=>setMode(false));
 $('btnConstant').addEventListener('click', ()=>setMode(true));
 
