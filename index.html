@@ -160,7 +160,10 @@ main{padding:14px 12px 0}
 table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
 th,td{padding:7px 5px;text-align:right;border-bottom:1px solid var(--line)}
 th:first-child,td:first-child{text-align:left}
-th{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+th{
+  color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:.8px;font-weight:800;
+  border-bottom:1px solid var(--accent);
+}
 td.num{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 tr.win td{color:var(--accent);font-weight:800}
 .chart{margin-top:14px}
@@ -182,6 +185,39 @@ footer a{color:var(--dim)}
 #upd button{background:#141d33;color:var(--accent);border:0;border-radius:8px;padding:8px 14px;font-weight:700}
 .off{display:none;font-size:11px;background:rgba(248,113,113,.18);color:var(--bad);border-radius:20px;padding:2px 9px;font-weight:700}
 </style>
+<style id="printcss">
+#printArea{display:none}
+@media print{
+  @page{ size:A4 landscape; margin:9mm; }
+  body>*{ display:none !important; }
+  #printArea{ display:block !important; background:#fff; color:#000;
+    font-family:Arial,Helvetica,sans-serif; font-size:8.2pt; }
+  #printArea h1{ font-size:15pt; margin:0 0 2mm; color:#B87400; letter-spacing:.5px; }
+  #printArea h2{ font-size:11pt; margin:0 0 2mm; padding-bottom:1mm;
+    border-bottom:1.4pt solid #B87400; color:#1E2D4A; }
+  #printArea .sub{ font-size:8pt; color:#555; margin:0 0 3mm; }
+  #printArea .hyp{ width:100%; border-collapse:collapse; margin:0 0 4mm; }
+  #printArea .hyp td{ border:.4pt solid #bbb; padding:1mm 1.6mm; font-size:7.6pt; }
+  #printArea .hyp td:nth-child(odd){ background:#f2f4f8; font-weight:bold; width:13%; }
+  #printArea table.dcf{ width:100%; border-collapse:collapse; }
+  #printArea table.dcf th{ background:#1E2D4A; color:#fff; font-size:7pt; padding:1.2mm .8mm;
+    text-align:right; border:.4pt solid #1E2D4A; }
+  #printArea table.dcf th:first-child{ text-align:left; }
+  #printArea table.dcf td{ border:.4pt solid #ccc; padding:1mm .8mm; text-align:right;
+    font-size:7.4pt; }
+  #printArea table.dcf td:first-child{ text-align:left; }
+  #printArea table.dcf tr:nth-child(even) td{ background:#f7f8fb; }
+  #printArea table.dcf tr.tot td{ font-weight:bold; background:#e8ecf4 !important;
+    border-top:1pt solid #1E2D4A; }
+  #printArea .page{ page-break-after:always; }
+  #printArea .page:last-child{ page-break-after:auto; }
+  #printArea .foot{ margin-top:3mm; font-size:6.8pt; color:#666; font-style:italic; }
+  #printArea .kpi{ display:flex; gap:4mm; margin:0 0 3mm; }
+  #printArea .kpi div{ border:.6pt solid #B87400; padding:1.4mm 2.4mm; }
+  #printArea .kpi b{ display:block; font-size:10pt; }
+  #printArea .kpi span{ font-size:6.8pt; color:#555; text-transform:uppercase; letter-spacing:.4px; }
+}
+</style>
 </head>
 <body>
 
@@ -194,8 +230,8 @@ footer a{color:var(--dim)}
     </div>
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
-      <p>7 poches · touchez une pastille pour ouvrir la rubrique</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 1.3 — 5 septembre 2026</p>
+      <p>Épargne · ETF · Retraite — 7 supports comparés</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 2.6 — 5 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -222,33 +258,118 @@ footer a{color:var(--dim)}
 
 <main>
 
-<div class="note">
-  Au Luxembourg l'impôt est <b>progressif</b> : commence par le <b>profil fiscal</b> ci-dessous, il alimente
-  tous les autres modules. Les plus-values sur titres détenus <b>plus de 6 mois</b> sont exonérées — c'est
-  le paramètre qui change tout par rapport à la France.
-</div>
 
+
+<!-- ============ BUDGET ============ -->
+<div class="card" id="card-budget" style="border-top-color:#5eead4">
+  <h2 style="color:#5eead4">Budget mensuel <span class="sub">point de départ</span></h2>
+  <div class="body">
+    <div class="note" style="margin:0 0 14px">
+      <b>Commencez ici.</b> Revenus moins dépenses donne votre capacité d'épargne réelle, et le total
+      des dépenses sert de base à la réserve de précaution. Ces chiffres alimentent l'assistant juste
+      en dessous, où ils restent modifiables — c'est là que vous fixez le nombre de mois de réserve.
+      Laissez à zéro ce qui ne vous concerne pas.
+    </div>
+
+    <div class="sect" style="border-left-color:#5eead4">Revenus nets mensuels</div>
+    <div class="field"><label>Revenu net du premier conjoint</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_rev1"><span class="unit">€</span></div></div>
+    <div class="field"><label>Revenu net du second conjoint</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_rev2"><span class="unit">€</span></div></div>
+    <div class="field"><label>Autres revenus nets réguliers</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_rev3"><span class="unit">€</span></div>
+      <div class="hint">Allocations familiales, revenus locatifs nets, pensions. Ce qui tombe
+        réellement sur le compte chaque mois.</div>
+    </div>
+
+    <div class="sect" style="border-left-color:#5eead4">Dépenses — logement</div>
+    <div class="field"><label>Mensualité d'emprunt ou loyer</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_logement"><span class="unit">€</span></div></div>
+    <div class="field"><label>Charges, énergie, eau, communications</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_charges"><span class="unit">€</span></div></div>
+
+    <div class="sect" style="border-left-color:#5eead4">Dépenses — vie courante</div>
+    <div class="field"><label>Alimentation et quotidien</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_alim"><span class="unit">€</span></div></div>
+    <div class="field"><label>Transports, carburant, véhicule</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_transport"><span class="unit">€</span></div></div>
+    <div class="field"><label>Assurances et santé</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_assur"><span class="unit">€</span></div></div>
+    <div class="field"><label>Enfants — garde, scolarité, activités</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_enfants"><span class="unit">€</span></div></div>
+    <div class="field"><label>Loisirs, vacances, divers</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_divers"><span class="unit">€</span></div></div>
+
+    <div class="sect" style="border-left-color:#5eead4">Intérêts d'emprunt — résidence principale</div>
+    <div class="field"><label>Intérêts payés dans l'année</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_interets"><span class="unit">€</span></div></div>
+    <div class="field"><label>Date de mise à disposition du logement</label>
+      <div class="wrap"><select id="bu_dispo">
+        <option value="apres2023">Après le 31/12/2023 — déduction intégrale</option>
+        <option value="2020">Entre 2020 et 2023 — 4 000 € par personne</option>
+        <option value="2015">Entre 2015 et 2019 — 3 000 € par personne</option>
+        <option value="avant">Avant 2015 — 2 000 € par personne</option>
+      </select><span class="unit">▾</span></div></div>
+    <div class="field"><label>Déduire du revenu imposable du profil</label>
+      <div class="wrap"><select id="bu_deduire">
+        <option value="1">Oui — recalculer l'impôt et les taux</option>
+        <option value="0">Non</option>
+      </select><span class="unit">▾</span></div></div>
+    <div class="res" id="res_int" style="margin-top:4px"></div>
+    <div class="hint">
+      Depuis l'année fiscale 2024, c'est la <b>date de mise à disposition</b> du logement qui fixe le
+      plafond, et non plus la date d'emménagement. Elle correspond au moment où le bien était
+      habitable. Les plafonds se cumulent par membre du ménage, conjoint et enfants compris. Un
+      logement mis à disposition après 2023 ouvre droit à la <b>déduction intégrale des intérêts,
+      sans plafond</b> — c'est le cas d'un achat réalisé aujourd'hui.
+    </div>
+
+    <div class="sect" style="border-left-color:#5eead4">Répartition dans le couple</div>
+    <div class="field"><label>Part financée par le premier conjoint</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_part1"><span class="unit">%</span></div>
+      <div class="hint">Sans effet fiscal : la déclaration est conjointe et l'impôt fusionné. Cette
+        ligne sert seulement à voir le taux d'effort de chacun.</div>
+    </div>
+
+    <div class="sect" style="border-left-color:#5eead4">Réserve de précaution</div>
+    <div class="field"><label>Mois de dépenses à garder disponibles</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_mois"><span class="unit">mois</span></div>
+      <div class="hint">Trois à six mois selon la stabilité de vos revenus. C'est le matelas qui
+        évite de casser un support au premier imprévu.</div>
+    </div>
+
+    <div class="res" id="res_bu"></div>
+
+    <div class="field" style="margin-top:14px"><label>Reporter ces chiffres dans l'assistant</label>
+      <div class="wrap"><select id="bu_actif">
+        <option value="1">Oui — revenus, dépenses et capacité d'épargne</option>
+        <option value="0">Non — je saisis tout à la main dans l'assistant</option>
+      </select><span class="unit">▾</span></div></div>
+
+
+  </div>
+</div>
 
 <!-- ============ ASSISTANT ============ -->
 <div class="card" id="card-assistant" style="border-top-color:var(--accent)">
   <h2>Par où commencer <span class="sub">répartition proposée</span></h2>
   <div class="body">
     <div class="note" style="margin:0 0 14px">
-      Répondez à cinq questions simples. L'app propose une répartition, l'explique ligne par ligne,
-      et remplit toutes les rubriques si elle vous convient. Vous pourrez ensuite ajuster ce que
-      vous voulez.
+      Les trois premières questions sont déjà remplies par le budget. Complétez les trois autres,
+      et l'app propose une répartition, l'explique ligne par ligne, puis remplit toutes les
+      rubriques si elle vous convient.
     </div>
 
     <div class="field"><label>1. Revenu net encaissé par le ménage, par an</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="as_net"><span class="unit">€</span></div>
-      <div class="hint">Ce que vous touchez réellement, virements sur le compte. L'app en déduit le
-        revenu imposable — pas besoin de le connaître.</div>
+      <div class="hint">Repris du budget ci-dessus, modifiable. L'app en déduit le revenu imposable
+        — pas besoin de le connaître.</div>
     </div>
 
-    <div class="field"><label>2. Ce que vous pouvez épargner chaque mois</label>
+    <div class="field"><label>2. Ce que vous pouvez épargner chaque mois <span style="color:var(--accent)">(repris du budget)</span></label>
       <div class="wrap"><input type="text" inputmode="decimal" id="as_cap"><span class="unit">€</span></div></div>
 
-    <div class="field"><label>3. Vos dépenses courantes mensuelles</label>
+    <div class="field"><label>3. Vos dépenses courantes mensuelles <span style="color:var(--accent)">(repris du budget)</span></label>
       <div class="wrap"><input type="text" inputmode="decimal" id="as_dep"><span class="unit">€</span></div></div>
 
     <div class="field"><label>4. Épargne déjà disponible immédiatement</label>
@@ -273,7 +394,7 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" inputmode="decimal" id="as_anAchat"><span class="unit">ans</span></div></div>
     <div class="field" id="as_apportWrap"><label>Apport prélevé sur cette épargne au moment de l'achat</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="as_apport"><span class="unit">€</span></div>
-      <div class="hint">Ce montant sort réellement des poches liquides l'année de l'achat. Le reste
+      <div class="hint">Ce montant sort réellement des supports liquides l'année de l'achat. Le reste
         du financement (produit de la vente, emprunt) n'entre pas dans cette simulation. Une fois
         l'achat passé, la répartition redevient celle d'un ménage sans projet.</div>
     </div>
@@ -281,10 +402,9 @@ footer a{color:var(--dim)}
     <div class="sect">Ajuster la proposition</div>
     <div class="hint" style="margin:-4px 0 10px">
       Ces trois curseurs se préremplissent selon le projet choisi ci-dessus, puis vous les modifiez
-      librement. Tout ce qui n'est pas absorbé par eux part en ETF.
+      librement. Tout ce qui n'est pas absorbé par eux part en ETF. Le nombre de mois de réserve se
+      règle dans le budget, en haut de page.
     </div>
-    <div class="field"><label>Mois de dépenses à garder en réserve</label>
-      <div class="wrap"><input type="text" inputmode="decimal" id="as_mois"><span class="unit">mois</span></div></div>
     <div class="field"><label>Part de l'effort orientée vers le projet ou la sécurité</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="as_proj"><span class="unit">%</span></div></div>
     <div class="field"><label>Part maximale bloquée en prévoyance 111bis</label>
@@ -299,7 +419,7 @@ footer a{color:var(--dim)}
       </select><span class="unit">▾</span></div>
       <div class="hint">Une fois la réserve constituée, continuer à l'alimenter n'a plus de sens.
         L'app calcule l'année où l'objectif est atteint et redéploie automatiquement l'effort vers
-        les autres poches à partir de là.</div>
+        les autres supports à partir de là.</div>
     </div>
 
     <div class="res" id="as_res_bloc"></div>
@@ -316,6 +436,7 @@ footer a{color:var(--dim)}
   </div>
 </div>
 
+
 <!-- ============ PROFIL FISCAL ============ -->
 <div class="card" style="border-top-color:#93a4c4">
   <h2 style="color:#c3d0e6">Profil fiscal <span class="sub">barème 2026</span></h2>
@@ -325,7 +446,7 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" id="p_nom"><span class="unit">✎</span></div>
     </div>
     <div class="field">
-      <label>Revenu imposable ajusté (hors placements)</label>
+      <label>Revenu imposable ajusté (hors revenus de l'épargne)</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="p_revenu"><span class="unit">€</span></div>
     </div>
     <div class="field">
@@ -405,13 +526,13 @@ footer a{color:var(--dim)}
 
 <!-- ============ ALLOCATION & LIQUIDITÉ ============ -->
 <div class="card">
-  <h2>Allocation &amp; liquidité <span class="sub">synthèse des 7 poches</span></h2>
+  <h2>Allocation &amp; liquidité <span class="sub">les 7 supports</span></h2>
   <div class="body">
     <button class="reset" id="typeBtn" style="margin:0 0 14px;border-color:var(--accent);color:var(--accent)">
       Appliquer une répartition type
     </button>
     <table id="alloc">
-      <thead><tr><th>Poche</th><th>€/mois</th><th>Part</th><th>Disponibilité</th></tr></thead>
+      <thead><tr><th>Support</th><th>€/mois</th><th>Part</th><th>Disponibilité</th></tr></thead>
       <tbody></tbody>
     </table>
     <div class="res">
@@ -463,7 +584,7 @@ footer a{color:var(--dim)}
       déposant et par établissement, ce qui est une autre bonne raison de ne pas tout concentrer.
       Les comptes courants et à vue y échappent totalement tant que leur
       rémunération reste sous 0,75 %. Aucun plafond de dépôt en revanche, contrairement au Livret A
-      français. Le rendement réel est généralement négatif après inflation : cette poche sert à la
+      français. Le rendement réel est généralement négatif après inflation : ce support sert à la
       sécurité, pas au rendement.
     </div>
     <div class="res" id="res_c"></div>
@@ -786,11 +907,15 @@ footer a{color:var(--dim)}
   </div>
 </div>
 
+<button class="reset" id="pdfBtn" style="border-color:var(--accent);color:var(--accent);margin-bottom:10px">
+  Tableau détaillé année par année (PDF)
+</button>
+
 <button class="reset" id="reset">Réinitialiser toutes les valeurs</button>
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 1.3 — 5 septembre 2026
+    Version 2.6 — 5 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -800,6 +925,8 @@ footer a{color:var(--dim)}
 </footer>
 
 </main>
+
+<div id="printArea"></div>
 
 <div id="upd">
   <span>Nouvelle version disponible</span>
@@ -909,6 +1036,9 @@ const DEFAUTS = {
   duree:15, actu:2,
   p_nom:'Ménage 1', p_revenu:120000, p_classe:'2', p_cadep:'1', p_enfants:2, p_age:38, p_index:2, p_infl:2, p_croiss:2,
   as_net:120000, as_cap:400, as_dep:4500, as_res:15000, as_projet:'imminent',
+  bu_rev1:5000, bu_rev2:4000, bu_rev3:600, bu_logement:2200, bu_charges:400, bu_alim:800, bu_transport:400, bu_assur:250,
+  bu_enfants:300, bu_divers:350, bu_part1:50, bu_actif:'1',
+  bu_interets:0, bu_dispo:'apres2023', bu_deduire:'1',
   as_mois:4, as_proj:70, as_pv:35, as_av:35, as_place:0, as_bascule:'1', as_an:1, as_anAchat:2, as_apport:0,
   c_mens2:150, e_mens2:200, o_mens2:200, v_mens2:200, b_versement2:9000, l_cotis2:0,
   c_init:0, c_mens:150, c_taux:1.5, c_banques:1,
@@ -1037,6 +1167,18 @@ function vers(i, v1, v2){
   const base = (AN_BASCULE>0 && i>AN_BASCULE) ? v2 : v1;
   return base*Math.pow(INDEXV, i-1);
 }
+function deductionInterets(){
+  const classe = $('p_classe').value;
+  const membres = (classe==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
+  const bareme = {apres2023:Infinity, '2020':4000, '2015':3000, avant:2000};
+  const unite = bareme[$('bu_dispo').value];
+  const plafond = unite===Infinity ? Infinity : unite*membres;
+  const payes = Math.max(0, num('bu_interets'));
+  const deduit = Math.min(payes, plafond);
+  return {payes, plafond, deduit, unite, membres,
+          actif: $('bu_deduire').value==='1'};
+}
+
 function calcProfil(){
   INDEXV = 1 + num('p_index')/100;
   IDX_BASE = K('k_index')/100;
@@ -1044,7 +1186,8 @@ function calcProfil(){
   CROISS = num('p_croiss')/100;
   IDX_AN = K('k_indexAn')/100;
   CADEP = K('k_cadep')/100;
-  const revenu = num('p_revenu');
+  const di = deductionInterets();
+  const revenu = Math.max(0, num('p_revenu') - (di.actif ? di.deduit : 0));
   const classe = $('p_classe').value;
   const cadepOn = $('p_cadep').value==='1';
   const base = impotClasse(revenu,classe);
@@ -1100,8 +1243,11 @@ function simulTitres(o){
   let verse = o.init;
   let impotsCum = 0;
   const flux = [-o.init];
+  const det = [];
 
   for(let i=1;i<=n;i++){
+    const capDeb = cap;
+    let impAn = 0, brutAn = 0;
     const apports = vers(i, o.mens*12, o.mens2*12);
     // apports lissés : moitié d'année de rendement en moyenne
     cap = cap*(1+perfNette/100) + apports*(1+perfNette/200);
@@ -1119,7 +1265,9 @@ function simulTitres(o){
       // si le revenu est déjà compris dans la performance (ETF distribuant),
       // seul l'impôt sort du portefeuille.
       cap += o.revenuInclus ? -imp : (brut - imp);
+      impAn = imp; brutAn = brut;
     }
+    det.push({an:i, versement:apports, eco:0, produits:cap-capDeb-apports+impAn, impot:impAn, retrait:0, capital:cap});
     flux.push(-apports);
   }
 
@@ -1131,7 +1279,8 @@ function simulTitres(o){
   const net = cap - impSpec;
   flux[n] += net;
 
-  return {flux, verse, brut:cap, impots:impotsCum, net, pvBrute, gainSpec, impSpec};
+  if(det.length) det[det.length-1].impot += impSpec;
+  return {flux, verse, brut:cap, impots:impotsCum, net, pvBrute, gainSpec, impSpec, det};
 }
 
 const RES = {};
@@ -1192,6 +1341,7 @@ function calcObligation(){
   let cap = num('o_init'), verse = num('o_init'), impots = 0;
   const mens = num('o_mens');
   const flux = [-cap];
+  const det = [];
 
   for(let i=1;i<=n;i++){
     const apports = vers(i, mens*12, num('o_mens2')*12);
@@ -1210,11 +1360,12 @@ function calcObligation(){
     verse += apports;
     let retrait = 0;
     if(AN_ACHAT === i && RETRAIT_O > 0){ retrait = Math.min(cap, RETRAIT_O); cap -= retrait; }
+    det.push({an:i, versement:apports, eco:0, produits:interets, impot:imp, retrait, capital:cap});
     flux.push(-apports + retrait);
   }
   const net = cap;
   flux[n] += net;
-  const r = {flux, verse, brut:cap+impots, impots, net};
+  const r = {flux, verse, brut:cap+impots, impots, net, det};
   RES.obligation = r;
 
   $('res_o').innerHTML =
@@ -1237,6 +1388,7 @@ function calcEpargne(){
   $('c_couvertAff').textContent = taux>0 ? 'jusqu\'à '+eur(FRANCHISE_C/(taux/100))+' placés' : '—';
   let cap = num('c_init'), verse = cap, impots = 0;
   const flux = [-cap];
+  const det = [];
   for(let i=1;i<=n;i++){
     const apports = vers(i, mens*12, num('c_mens2')*12);
     const interets = (cap + apports/2) * taux/100;
@@ -1248,10 +1400,11 @@ function calcEpargne(){
     verse += apports;
     let retrait = 0;
     if(AN_ACHAT === i && RETRAIT_C > 0){ retrait = Math.min(cap, RETRAIT_C); cap -= retrait; }
+    det.push({an:i, versement:apports, eco:0, produits:interets, impot:imp, retrait, capital:cap});
     flux.push(-apports + retrait);
   }
   flux[n] += cap;
-  RES.epargne = {flux, verse, brut:cap+impots, impots, net:cap};
+  RES.epargne = {flux, verse, brut:cap+impots, impots, net:cap, det};
   $('res_c').innerHTML =
     ligne('Total versé', eur(verse)) +
     ligne('Intérêts bruts cumulés', eur(cap+impots-verse)) +
@@ -1272,7 +1425,9 @@ function calcBausparen(){
   const reinv = $('l_reinv').value==='1';
   let cap=0, verse=0, economie=0;
   const flux=[0];
+  const det=[];
   for(let i=1;i<=n;i++){
+    const capDeb = cap;
     const ci = vers(i, cotis, num('l_cotis2'));
     const di = Math.min(ci, plafond);
     const ri = revenuAnnee(i);
@@ -1281,10 +1436,11 @@ function calcBausparen(){
     const injecte = ci + (reinv ? eco : 0);
     cap = cap*(1+rend/100) + injecte*(1+rend/200);
     verse += ci;
+    det.push({an:i, versement:ci, eco, produits:cap-capDeb-injecte, impot:0, retrait:0, capital:cap});
     flux.push(-ci + (reinv ? 0 : eco));
   }
   flux[n] += cap;
-  RES.bauspar = {flux, verse, brut:cap, impots:0, net:cap, economie};
+  RES.bauspar = {flux, verse, brut:cap, impots:0, net:cap, economie, det};
   $('res_l').innerHTML =
     ligne('Total versé', eur(verse)) +
     ligne('Part déductible par an', eur(deductible)+' / '+eur(plafond)) +
@@ -1302,36 +1458,47 @@ function calcAssuranceVie(){
   const membres = (PROFIL.classe==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
   const plafond = K('k_111') * membres;
   $('v_plafondAff').textContent = eur(plafond)+'  ('+membres+' membres)';
-  const primeDeduite = Math.min(num('v_prime'), plafond);
+  // La déduction ne peut pas excéder ce qui est réellement versé dans l'année :
+  // elle est bornée par le plafond légal ET par les primes effectivement payées.
+  const primeSaisie = Math.min(num('v_prime'), plafond);
   const reinv = $('v_reinv').value==='1';
+  let primeMoy = 0;
 
   let cap = num('v_init')*(1-fEntree);
   let verse = num('v_init');
   let economie = 0;
   const mens = num('v_mens');
   const flux = [-num('v_init')];
+  const det = [];
 
   for(let i=1;i<=n;i++){
     const apports = vers(i, mens*12, num('v_mens2')*12);
-    const eco = impotSupplementaire(revenuAnnee(i) - primeDeduite, primeDeduite, PROFIL.classe);
+    const prime_i = Math.min(primeSaisie, apports + (i===1 ? num('v_init') : 0));
+    primeMoy += prime_i/n;
+    const eco = impotSupplementaire(revenuAnnee(i) - prime_i, prime_i, PROFIL.classe);
     economie += eco;
     const injecte = apports*(1-fEntree) + (reinv ? eco : 0);
+    const capDeb = cap;
     cap = cap*(1+rend/100) + injecte*(1+rend/200);
     verse += apports;
+    det.push({an:i, versement:apports, eco, produits:cap-capDeb-injecte, impot:0, retrait:0, capital:cap});
     flux.push(-apports + (reinv ? 0 : eco));
   }
   const net = cap;   // sortie non imposée au Luxembourg
   flux[n] += net;
-  const r = {flux, verse, brut:cap, impots:0, net, economie};
+  const r = {flux, verse, brut:cap, impots:0, net, economie, det};
   RES.av = r;
 
   $('res_v').innerHTML =
     ligne('Total versé', eur(r.verse)) +
-    ligne('Prime déductible retenue', eur(primeDeduite)+' / '+eur(plafond)) +
+    ligne('Prime déductible moyenne', eur(primeMoy)+' / '+eur(plafond)) +
     ligne('Économie d\'impôt cumulée', eur(economie)) +
     ligne('Impôt à la sortie', '0 €') +
     ligne('Capital net', eur(net), 'big') +
     '<span class="tag ok">Rachat et capital décès non imposés au Luxembourg</span>' +
+    (primeMoy + 1 < primeSaisie
+      ? '<div class="hint" style="color:#f5a623">Vos versements ne couvrent pas la prime déductible saisie ('+eur(primeSaisie)+'). La déduction est ramenée à ce que vous versez réellement : on ne peut pas déduire une prime qu\'on ne paie pas.</div>'
+      : '') +
     (num('v_prime') > plafond
       ? '<div class="hint" style="color:#f87171">Prime saisie supérieure au plafond art. 111 — seuls '+eur(plafond)+' sont déductibles, et ce plafond est partagé avec vos primes RC, santé et intérêts de prêts à la consommation.</div>'
       : '');
@@ -1350,7 +1517,9 @@ function calc111bis(){
 
   let cap=0, verse=0, economie=0;
   const flux=[0];
+  const det=[];
   for(let i=1;i<=n;i++){
+    const capDeb = cap;
     const vi = vers(i, versA, num('b_versement2'));
     const di = Math.min(vi, plafond);          // la déduction reste bornée par le plafond légal
     const ri = revenuAnnee(i);
@@ -1359,6 +1528,7 @@ function calc111bis(){
     const injecte = vi + (reinv ? eco : 0);
     cap = cap*(1+rend/100) + injecte*(1+rend/200);
     verse += vi;
+    det.push({an:i, versement:vi, eco, produits:cap-capDeb-injecte, impot:0, retrait:0, capital:cap});
     flux.push(-vi + (reinv ? 0 : eco));
   }
 
@@ -1382,7 +1552,8 @@ function calc111bis(){
   resetContexte();
   const net = cap - impotSortie;
   flux[n] += net;
-  const r = {flux, verse, brut:cap, impots:impotSortie, net, economie};
+  if(det.length) det[det.length-1].impot = impotSortie;
+  const r = {flux, verse, brut:cap, impots:impotSortie, net, economie, det};
   RES.pv = r;
 
   const alerte = n<10
@@ -1405,6 +1576,55 @@ function calc111bis(){
     alerte;
 }
 
+
+function calcBudget(){
+  const l = ['bu_logement','bu_charges','bu_alim','bu_transport','bu_assur','bu_enfants','bu_divers'];
+  const total = l.reduce((s,k)=>s+num(k), 0);
+  const revenus = num('bu_rev1') + num('bu_rev2') + num('bu_rev3');
+  const capacite = Math.max(0, revenus - total);
+  const p1 = Math.max(0, Math.min(100, num('bu_part1')));
+  const actif = $('bu_actif').value==='1';
+  if(actif){
+    const focus = document.activeElement;
+    const poser = (id, v)=>{ const el=$(id); if(el && el!==focus) el.value = Math.round(v); };
+    if(total > 0) poser('as_dep', total);
+    if(revenus > 0) poser('as_net', (num('bu_rev1')+num('bu_rev2'))*12);
+    poser('as_cap', capacite);
+  }
+
+  const di = deductionInterets();
+  const brut = num('p_revenu');
+  const ecoInt = di.deduit>0 ? impotClasse(brut,PROFIL.classe)*(1+tauxFPE(brut,PROFIL.classe))
+                             - impotClasse(brut-di.deduit,PROFIL.classe)*(1+tauxFPE(brut-di.deduit,PROFIL.classe))
+                             : 0;
+  $('res_int').innerHTML = di.payes>0
+    ? ligne('Plafond du ménage', di.plafond===Infinity ? 'aucun plafond' : eur(di.plafond)+'  ('+di.membres+' × '+eur(di.unite)+')') +
+      ligne('Intérêts déductibles', eur(di.deduit)) +
+      ligne('Économie d\'impôt annuelle', eur(ecoInt), 'big') +
+      (di.actif ? '<span class="tag ok">Déduit du revenu du profil</span>'
+                : '<span class="tag neutral">Non déduit — le profil garde le revenu brut</span>') +
+      (di.payes > di.deduit ? '<div class="hint" style="color:#f87171">'+eur(di.payes-di.deduit)+' d\'intérêts dépassent le plafond et ne sont pas déductibles.</div>' : '')
+    : '<div class="hint">Saisissez vos intérêts annuels pour voir l\'économie d\'impôt.</div>';
+
+  const eff1 = num('bu_rev1')>0 ? (total*p1/100)/num('bu_rev1') : 0;
+  const eff2 = num('bu_rev2')>0 ? (total*(100-p1)/100)/num('bu_rev2') : 0;
+
+  $('res_bu').innerHTML =
+    ligne('Revenus nets mensuels', eur(revenus)) +
+    ligne('Dépenses mensuelles', eur(total)) +
+    ligne('Capacité d\'épargne', eur(capacite), 'big') +
+    ligne('Taux d\'épargne', revenus>0 ? pct(capacite/revenus) : '—') +
+    '<div class="rowsplit"></div>' +
+    ligne('Payé par le premier conjoint', eur(total*p1/100)+'  (effort '+pct(eff1)+')') +
+    ligne('Payé par le second conjoint', eur(total*(100-p1)/100)+'  (effort '+pct(eff2)+')') +
+    '<div class="rowsplit"></div>' +
+    ligne('Réserve visée', eur(total*Math.max(0,num('as_mois')))) +
+    (capacite <= 0 && revenus > 0
+      ? '<span class="tag bad">Vos dépenses absorbent tout : aucune capacité d\'épargne</span>'
+      : (actif ? '<span class="tag ok">Reporté dans l\'assistant</span>'
+               : '<span class="tag neutral">Non reporté — saisie manuelle</span>'));
+  return total;
+}
 
 /* ================= ASSISTANT =================
    Convertit un net encaissé en revenu imposable, puis répartit la capacité
@@ -1501,7 +1721,7 @@ function assistant(){
   if(reste > 0.5){
     a.etf += reste;
     notes.push(['ETF capitalisant', reste,
-      'Aucune imposition au Luxembourg : ni pendant l\'épargne, ni sur la plus-value après 6 mois de détention. C\'est la poche de rendement, à horizon 8 ans minimum.']);
+      'Aucune imposition au Luxembourg : ni pendant l\'épargne, ni sur la plus-value après 6 mois de détention. C\'est le support de rendement, à horizon 8 ans minimum.']);
     reste = 0;
   }
 
@@ -1564,7 +1784,7 @@ function assistant(){
   } else { html += '<div style="margin-bottom:8px"></div>'; }
   if(mobilisable > 0){
     html += '<div class="sect" style="margin:14px 0 6px;font-size:13px">Capital déjà constitué — '+eur(mobilisable)+'</div>';
-    html += '<table><thead><tr><th>Poche</th><th>Montant</th></tr></thead><tbody>';
+    html += '<table><thead><tr><th>Support</th><th>Montant</th></tr></thead><tbody>';
     const libK = {epargne:'Compte d\'épargne', obligation:'Dépôts à terme', av:'Assurance-vie', etf:'ETF capitalisant'};
     Object.entries(k).forEach(([key,v])=>{
       if(v < 1) return;
@@ -1574,7 +1794,7 @@ function assistant(){
     html += '<div class="hint" style="margin-top:8px">Le socle de '+eur(Math.min(mobilisable,cible))+' reste liquide : c\'est votre réserve. Le reste suit la même logique que les versements. Ni le 111bis ni l\'épargne-logement n\'apparaissent ici — ils n\'acceptent aucun versement exceptionnel au-delà de leur plafond annuel. Revendre des titres pour les redéployer ne coûte rien fiscalement au Luxembourg dès lors qu\'ils sont détenus depuis plus de six mois.</div>';
     html += '<div class="sect" style="margin:16px 0 6px;font-size:13px">Versements mensuels</div>';
   }
-  html += '<table><thead><tr><th>Poche</th><th>€/mois</th><th>Part</th></tr></thead><tbody>';
+  html += '<table><thead><tr><th>Support</th><th>€/mois</th><th>Part</th></tr></thead><tbody>';
   notes.forEach(([nom,v])=>{
     html += '<tr><td>'+nom+'</td><td class="num">'+nf.format(Math.round(v))+' €</td><td class="num">'+nf2.format(v/total*100)+' %</td></tr>';
   });
@@ -1583,7 +1803,7 @@ function assistant(){
     const libB = {epargne:'Compte d\'épargne', obligation:'Dépôts à terme', pv:'Prévoyance 111bis',
                   av:'Assurance-vie art. 111', bauspar:'Épargne-logement', etf:'ETF capitalisant'};
     html += '<div class="sect" style="margin:16px 0 6px;font-size:13px">À partir de l\'année '+(AN_BASCULE+1)+' — réserve constituée</div>';
-    html += '<table><thead><tr><th>Poche</th><th>€/mois</th><th>Part</th></tr></thead><tbody>';
+    html += '<table><thead><tr><th>Support</th><th>€/mois</th><th>Part</th></tr></thead><tbody>';
     Object.entries(b2).forEach(([key,v])=>{
       if(v < 0.5) return;
       html += '<tr><td>'+libB[key]+'</td><td class="num">'+nf.format(Math.round(v))+' €</td><td class="num">'+nf2.format(v/total*100)+' %</td></tr>';
@@ -1593,7 +1813,7 @@ function assistant(){
       ? 'l\'achat aura eu lieu et la réserve sera constituée'
       : 'la réserve de '+eur(cible)+' sera constituée';
     html += '<div class="hint" style="margin-top:8px">À l\'année '+(AN_BASCULE+1)+', '+cause+
-      '. Plus aucune contrainte de liquidité à court terme : l\'effort bascule vers les poches de rendement, comme pour un ménage sans projet. Chaque rubrique porte un champ « après bascule » que vous pouvez modifier.</div>';
+      '. Plus aucune contrainte de liquidité à court terme : l\'effort bascule vers les supports de rendement, comme pour un ménage sans projet. Chaque rubrique porte un champ « après bascule » que vous pouvez modifier.</div>';
   }
   notes.forEach(([nom,v,txt])=>{
     if(v < 0.5) return;
@@ -1629,6 +1849,98 @@ function appliquerAssistant(){
   $('card-assistant').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
+
+/* ================= DOCUMENT IMPRIMABLE =================
+   Un tableau de type plan de financement par support : ressources
+   (versements, économie d'impôt, produits financiers), emplois, flux net
+   pour l'investisseur, actualisation et VAN cumulée. */
+
+function construirePDF(){
+  const n = +$('duree').value;
+  const actu = num('actu')/100;
+  const infl = num('p_infl')/100;
+  const nomMenage = $('p_nom').value || 'Ménage';
+  const d = new Date().toLocaleDateString('fr-FR');
+
+  const hyp = [
+    ['Ménage', nomMenage, 'Classe d\'impôt', $('p_classe').options[$('p_classe').selectedIndex].text.split('—')[0].trim()],
+    ['Revenu imposable', eur(PROFIL.revenu), 'Enfants à charge', nf.format(num('p_enfants'))],
+    ['Impôt annuel', eur(PROFIL.tot), 'Taux moyen', pct(PROFIL.tauxMoyen)],
+    ['Taux marginal', pct(PROFIL.tmi), 'Progression du revenu', nf2.format(num('p_croiss'))+' %'],
+    ['Durée simulée', n+' ans', 'Indexation des versements', nf2.format(num('p_index'))+' %'],
+    ['Taux d\'actualisation', nf2.format(actu*100)+' %', 'Inflation retenue', nf2.format(infl*100)+' %'],
+    ['Plafond 111bis', eur(K('k_111bis')*(parseInt($('b_contrats').value,10)||1)), 'Plafond art. 111', eur(K('k_111')*((PROFIL.classe==='2'?2:1)+num('p_enfants')))],
+    ['Année de bascule', AN_BASCULE>0 ? 'année '+(AN_BASCULE+1) : 'aucune', 'Apport immobilier', AN_ACHAT>0 ? eur(num('as_apport'))+' en année '+AN_ACHAT : 'aucun']
+  ];
+  let hypHTML = '<table class="hyp">';
+  hyp.forEach(l=>{ hypHTML += '<tr><td>'+l[0]+'</td><td>'+l[1]+'</td><td>'+l[2]+'</td><td>'+l[3]+'</td></tr>'; });
+  hypHTML += '</table>';
+
+  let html = '';
+  SUPPORTS.forEach(sup=>{
+    const r = RES[sup.k];
+    if(!r || !r.det || r.verse <= 0) return;
+
+    let vanCum = 0, cumVers = 0, cumEco = 0, cumProd = 0, cumImp = 0;
+    let lignes = '';
+    r.det.forEach((x,idx)=>{
+      const dernier = idx === r.det.length-1;
+      const fluxInv = (r.flux[x.an] !== undefined ? r.flux[x.an] : 0);
+      const actualise = fluxInv / Math.pow(1+actu, x.an);
+      vanCum += actualise;
+      cumVers += x.versement; cumEco += x.eco; cumProd += x.produits; cumImp += x.impot;
+      lignes += '<tr>'+
+        '<td>Année '+x.an+'</td>'+
+        '<td>'+nf.format(Math.round(x.versement))+'</td>'+
+        '<td>'+(x.eco>0?nf.format(Math.round(x.eco)):'—')+'</td>'+
+        '<td>'+nf.format(Math.round(x.versement+x.eco))+'</td>'+
+        '<td>'+nf.format(Math.round(x.produits))+'</td>'+
+        '<td>'+(x.impot>0?'('+nf.format(Math.round(x.impot))+')':'—')+'</td>'+
+        '<td>'+(x.retrait>0?nf.format(Math.round(x.retrait)):'—')+'</td>'+
+        '<td>'+nf.format(Math.round(x.capital))+'</td>'+
+        '<td>'+nf.format(Math.round(fluxInv))+'</td>'+
+        '<td>'+nf.format(Math.round(actualise))+'</td>'+
+        '<td>'+nf.format(Math.round(vanCum))+'</td>'+
+        '</tr>';
+    });
+    lignes += '<tr class="tot"><td>Total</td>'+
+      '<td>'+nf.format(Math.round(cumVers))+'</td>'+
+      '<td>'+nf.format(Math.round(cumEco))+'</td>'+
+      '<td>'+nf.format(Math.round(cumVers+cumEco))+'</td>'+
+      '<td>'+nf.format(Math.round(cumProd))+'</td>'+
+      '<td>('+nf.format(Math.round(cumImp))+')</td>'+
+      '<td></td><td>'+nf.format(Math.round(r.net))+'</td>'+
+      '<td></td><td></td><td>'+nf.format(Math.round(vanCum))+'</td></tr>';
+
+    const triR = isFinite(r.tri) ? r.tri : NaN;
+    html += '<div class="page">'+
+      '<h1>'+sup.nom+'</h1>'+
+      '<p class="sub">'+nomMenage+' — plan de financement sur '+n+' ans, établi le '+d+' · Comparateur Luxembourg v2.6</p>'+
+      hypHTML +
+      '<div class="kpi">'+
+        '<div><span>Total versé</span><b>'+eur(r.verse)+'</b></div>'+
+        '<div><span>Économie d\'impôt</span><b>'+eur(r.economie||0)+'</b></div>'+
+        '<div><span>Impôt supporté</span><b>'+eur(r.impots||0)+'</b></div>'+
+        '<div><span>Capital net</span><b>'+eur(r.net)+'</b></div>'+
+        '<div><span>TRI net</span><b>'+(isFinite(triR)?nf2.format(triR*100)+' %':'—')+'</b></div>'+
+        '<div><span>VAN à '+nf2.format(actu*100)+' %</span><b>'+eur(vanCum)+'</b></div>'+
+      '</div>'+
+      '<table class="dcf"><thead><tr>'+
+        '<th>Exercice</th><th>Versement</th><th>Éco. impôt</th><th>Ressources</th>'+
+        '<th>Produits fin.</th><th>Impôt</th><th>Retrait</th><th>Capital fin</th>'+
+        '<th>Flux net</th><th>Actualisé</th><th>VAN cumulée</th>'+
+      '</tr></thead><tbody>'+lignes+'</tbody></table>'+
+      '<p class="foot">Montants en euros courants. Ressources = versement + économie d\'impôt réinvestie. ' +
+      'Produits financiers = rendement généré dans l\'exercice, net de frais. Flux net = ce qui sort réellement ' +
+      'de la poche de l\'investisseur, le capital net étant encaissé la dernière année. Actualisation à ' +
+      nf2.format(actu*100)+' %. Estimation pédagogique ne valant pas conseil fiscal ; les rendements sont des hypothèses, non des garanties.</p>'+
+    '</div>';
+  });
+
+  if(!html) html = '<h1>Aucun support alimenté</h1><p>Renseignez au moins un versement.</p>';
+  $('printArea').innerHTML = html;
+}
+
 /* ================= AFFICHAGE GLOBAL ================= */
 const SUPPORTS = [
   {k:'epargne', nom:'Épargne',      court:'ÉPARGNE',     c:'#5eead4', id:'card-epargne'},
@@ -1640,8 +1952,8 @@ const SUPPORTS = [
   {k:'pv',     nom:'111bis',        court:'111BIS',      c:'#f5a623', id:'card-pv'}
 ];
 
-/* Poches : montant mensuel, liquidité */
-const POCHES = [
+/* Supports : montant mensuel, liquidité */
+const SUPPORTS_POCHE = [
   {nom:'Compte d\'épargne', c:'#5eead4', m:()=>num('c_mens'),        liq:'immédiate',      cls:'liq'},
   {nom:'ETF',               c:'#fb7c4e', m:()=>num('e_mens'),        liq:'quelques jours', cls:'liq'},
   {nom:'Action',            c:'#4ade80', m:()=>num('a_mens'),        liq:'quelques jours', cls:'liq'},
@@ -1652,7 +1964,7 @@ const POCHES = [
 ];
 
 function afficheAllocation(){
-  const lignes = POCHES.map(p=>({...p, v:p.m()}));
+  const lignes = SUPPORTS_POCHE.map(p=>({...p, v:p.m()}));
   const total = lignes.reduce((s,l)=>s+l.v,0) || 1;
   $('alloc').querySelector('tbody').innerHTML = lignes.map(l=>
     '<tr><td><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+l.c+';margin-right:6px"></span>'+l.nom+'</td>'+
@@ -1743,7 +2055,31 @@ function afficheGlobal(){
     : 'Capital net à l\'échéance, après impôt luxembourgeois.';
 }
 
+/* Saisie confortable :
+   - le recalcul est différé pendant la frappe (debounce) ;
+   - la position de défilement est ancrée sur le champ actif, pour que le
+     contenu qui change au-dessus ne fasse pas sauter l'écran. */
 function calcAll(){
+  const actif = document.activeElement;
+  const ancre = (actif && (actif.tagName==='INPUT' || actif.tagName==='SELECT')) ? actif : null;
+  const avant = ancre ? ancre.getBoundingClientRect().top : 0;
+
+  calcAllInterne();
+
+  if(ancre && ancre.isConnected){
+    const apres = ancre.getBoundingClientRect().top;
+    const ecart = apres - avant;
+    if(Math.abs(ecart) > 0.5) window.scrollBy(0, ecart);
+  }
+}
+
+let tempo = null;
+function calcAllDiffere(){
+  clearTimeout(tempo);
+  tempo = setTimeout(calcAll, 300);
+}
+
+function calcAllInterne(){
   $('dureeV').textContent = $('duree').value;
   $('actuV').textContent = nf2.format(num('actu'));
   $('inflV').textContent = nf2.format(num('p_infl'));
@@ -1752,6 +2088,7 @@ function calcAll(){
   $('as_achatWrap').style.display  = avecProjet ? '' : 'none';
   $('as_apportWrap').style.display = avecProjet ? '' : 'none';
   calcProfil();
+  calcBudget();
   assistant();
   calcEpargne();
   calcBausparen();
@@ -1789,8 +2126,14 @@ $('delMg').addEventListener('click', ()=>{
 charger();
 K_CHAMPS.forEach(k=>{
   const el=$(k); if(!el) return;
-  el.addEventListener('input', calcAll);
-  el.addEventListener('change', calcAll);
+  if(el.tagName === 'SELECT' || el.type === 'range'){
+    el.addEventListener('input', calcAll);
+    el.addEventListener('change', calcAll);
+  } else {
+    el.addEventListener('input', calcAllDiffere);
+    el.addEventListener('change', calcAll);
+    el.addEventListener('blur', calcAll);
+  }
 });
 $('resetK').addEventListener('click', ()=>{
   K_CHAMPS.forEach(k=>{ const el=$(k); if(el) el.value=K_DEFAUTS[k]; });
@@ -1798,8 +2141,14 @@ $('resetK').addEventListener('click', ()=>{
 });
 CHAMPS.forEach(k=>{
   const el=$(k); if(!el) return;
-  el.addEventListener('input', calcAll);
-  el.addEventListener('change', calcAll);
+  if(el.tagName === 'SELECT' || el.type === 'range'){
+    el.addEventListener('input', calcAll);
+    el.addEventListener('change', calcAll);
+  } else {
+    el.addEventListener('input', calcAllDiffere);
+    el.addEventListener('change', calcAll);
+    el.addEventListener('blur', calcAll);
+  }
 });
 function setMode(reel){
   MODE_REEL = reel;
@@ -1817,6 +2166,11 @@ $('as_projet').addEventListener('change', ()=>{
   const pr = PRESETS_PROJET[$('as_projet').value];
   Object.entries(pr).forEach(([k,v])=>{ $(k).value = v; });
   calcAll();
+});
+$('pdfBtn').addEventListener('click', ()=>{
+  calcAll();
+  construirePDF();
+  setTimeout(()=>window.print(), 120);
 });
 $('as_apply').addEventListener('click', appliquerAssistant);
 $('btnCourant').addEventListener('click', ()=>setMode(false));
