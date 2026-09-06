@@ -231,7 +231,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>Épargne · ETF · Retraite — 7 supports comparés</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 2.6 — 5 septembre 2026</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 2.8 — 5 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -269,6 +269,20 @@ footer a{color:var(--dim)}
       des dépenses sert de base à la réserve de précaution. Ces chiffres alimentent l'assistant juste
       en dessous, où ils restent modifiables — c'est là que vous fixez le nombre de mois de réserve.
       Laissez à zéro ce qui ne vous concerne pas.
+    </div>
+
+    <div class="sect" style="border-left-color:#5eead4">Composition du ménage</div>
+    <div class="field"><label>Enfants à charge</label>
+      <div class="wrap"><input type="text" inputmode="numeric" id="p_enfants"><span class="unit">enf.</span></div></div>
+    <div class="field"><label>Âge du plus jeune conjoint</label>
+      <div class="wrap"><input type="text" inputmode="numeric" id="p_age"><span class="unit">ans</span></div></div>
+    <div class="line" style="padding:2px 0 4px"><span>Plafond assurances art. 111</span><span id="bu_pl111">—</span></div>
+    <div class="line" style="padding:2px 0 10px"><span>Plafond épargne-logement</span><span id="bu_plBaus">—</span></div>
+    <div class="hint" style="margin-bottom:11px">
+      Les enfants ne modifient pas le barème d'imposition au Luxembourg : la modération est versée
+      à part par la Caisse pour l'avenir des enfants. Ils relèvent en revanche les deux plafonds
+      ci-dessus, comptés par membre du ménage. L'âge compte parce que le plafond épargne-logement
+      double tant que le plus jeune conjoint a moins de 41 ans.
     </div>
 
     <div class="sect" style="border-left-color:#5eead4">Revenus nets mensuels</div>
@@ -362,8 +376,10 @@ footer a{color:var(--dim)}
 
     <div class="field"><label>1. Revenu net encaissé par le ménage, par an</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="as_net"><span class="unit">€</span></div>
-      <div class="hint">Repris du budget ci-dessus, modifiable. L'app en déduit le revenu imposable
-        — pas besoin de le connaître.</div>
+      <div class="hint">Repris du budget ci-dessus, modifiable. L'app en déduit une estimation du
+        revenu imposable — pas besoin de le connaître pour démarrer. Cette estimation est ensuite
+        <b>modifiable dans le profil fiscal</b> : si vous avez votre bulletin d'imposition sous la
+        main, remplacez-la par le montant exact.</div>
     </div>
 
     <div class="field"><label>2. Ce que vous pouvez épargner chaque mois <span style="color:var(--accent)">(repris du budget)</span></label>
@@ -446,8 +462,24 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" id="p_nom"><span class="unit">✎</span></div>
     </div>
     <div class="field">
-      <label>Revenu imposable ajusté (hors revenus de l'épargne)</label>
+      <label>Revenu imposable ajusté <span style="color:var(--accent)">— à remplacer par votre chiffre exact</span></label>
       <div class="wrap"><input type="text" inputmode="decimal" id="p_revenu"><span class="unit">€</span></div>
+      <div class="hint">
+        Rempli automatiquement à partir du net saisi dans le budget, en appliquant des cotisations
+        sociales et des frais forfaitaires. <b>C'est une estimation, et c'est le chiffre le plus
+        important de l'application</b> : il détermine le taux appliqué à chaque déduction. Le montant
+        exact figure sur votre bulletin d'imposition, ligne « revenu imposable ajusté ». Saisissez-le
+        ici dès que vous l'avez — tous les calculs se recalent dessus.
+      </div>
+    </div>
+    <div class="field">
+      <label>Origine de ce montant</label>
+      <div class="wrap"><select id="p_source">
+        <option value="auto">Estimé par l'app à partir du net</option>
+        <option value="manuel">Saisi d'après mon bulletin d'imposition</option>
+      </select><span class="unit">▾</span></div>
+      <div class="hint">Passez sur « saisi d'après mon bulletin » pour verrouiller votre montant :
+        il ne sera plus recalculé quand vous modifierez le budget.</div>
     </div>
     <div class="field">
       <label>Classe d'impôt</label>
@@ -456,14 +488,6 @@ footer a{color:var(--dim)}
         <option value="1">Classe 1 — célibataire / imposition individuelle</option>
         <option value="1a">Classe 1a — parent isolé, veuf, 65 ans+</option>
       </select><span class="unit">▾</span></div>
-    </div>
-    <div class="field">
-      <label>Âge du plus jeune conjoint (plafond épargne-logement)</label>
-      <div class="wrap"><input type="text" inputmode="numeric" id="p_age"><span class="unit">ans</span></div>
-    </div>
-    <div class="field">
-      <label>Enfants à charge dans le ménage</label>
-      <div class="wrap"><input type="text" inputmode="numeric" id="p_enfants"><span class="unit">enf.</span></div>
     </div>
     <button class="reset" id="delMg" style="margin:2px 0 14px;border-color:#f87171;color:#f87171">Supprimer ce ménage</button>
     <div class="hint" style="margin-bottom:6px">
@@ -915,7 +939,7 @@ footer a{color:var(--dim)}
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 2.6 — 5 septembre 2026
+    Version 2.8 — 5 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -1034,7 +1058,7 @@ const K = id => { const v = parseFloat(($(id).value||'').replace(',','.')); retu
 
 const DEFAUTS = {
   duree:15, actu:2,
-  p_nom:'Ménage 1', p_revenu:120000, p_classe:'2', p_cadep:'1', p_enfants:2, p_age:38, p_index:2, p_infl:2, p_croiss:2,
+  p_nom:'Ménage 1', p_revenu:120000, p_source:'auto', p_classe:'2', p_cadep:'1', p_enfants:2, p_age:38, p_index:2, p_infl:2, p_croiss:2,
   as_net:120000, as_cap:400, as_dep:4500, as_res:15000, as_projet:'imminent',
   bu_rev1:5000, bu_rev2:4000, bu_rev3:600, bu_logement:2200, bu_charges:400, bu_alim:800, bu_transport:400, bu_assur:250,
   bu_enfants:300, bu_divers:350, bu_part1:50, bu_actif:'1',
@@ -1209,6 +1233,11 @@ function calcProfil(){
   $('r_pl111').textContent = eur(K('k_111')*membres)+'  ('+membres+' × '+eur(K('k_111'))+')';
   $('r_plBaus').textContent = eur(uniteB*membres)+'  ('+membres+' × '+eur(uniteB)+')';
   $('r_pl111bis').textContent = eur(K('k_111bis')*adultes)+'  ('+adultes+' × '+eur(K('k_111bis'))+')';
+
+  const src = $('p_source').value === 'auto';
+  const lab = $('p_revenu').closest('.field').querySelector('label span');
+  if(lab) lab.textContent = src ? '— estimé, à remplacer par votre chiffre exact'
+                                : '— verrouillé sur votre bulletin';
 
   $('r_impotBase').textContent = eur(base);
   $('r_fpe').textContent = eur(fpe)+'  ('+nf2.format(fpeT*100)+' %)';
@@ -1577,6 +1606,15 @@ function calc111bis(){
 }
 
 
+/* Estime le revenu imposable à partir du net, avant tout calcul d'impôt.
+   Ne fait rien si l'utilisateur a verrouillé son chiffre exact. */
+function estimerRevenu(){
+  if($('p_source').value !== 'auto') return;
+  if(document.activeElement === $('p_revenu')) return;
+  const ria = netVersImposable(num('as_net'), $('p_classe').value);
+  if(ria > 0) $('p_revenu').value = Math.round(ria);
+}
+
 function calcBudget(){
   const l = ['bu_logement','bu_charges','bu_alim','bu_transport','bu_assur','bu_enfants','bu_divers'];
   const total = l.reduce((s,k)=>s+num(k), 0);
@@ -1605,6 +1643,11 @@ function calcBudget(){
                 : '<span class="tag neutral">Non déduit — le profil garde le revenu brut</span>') +
       (di.payes > di.deduit ? '<div class="hint" style="color:#f87171">'+eur(di.payes-di.deduit)+' d\'intérêts dépassent le plafond et ne sont pas déductibles.</div>' : '')
     : '<div class="hint">Saisissez vos intérêts annuels pour voir l\'économie d\'impôt.</div>';
+
+  const membresB = (($('p_classe').value==='2') ? 2 : 1) + Math.max(0, num('p_enfants'));
+  const uniteB = num('p_age') < 41 ? K('k_bausJ') : K('k_baus');
+  $('bu_pl111').textContent  = eur(K('k_111')*membresB)+'  ('+membresB+' × '+eur(K('k_111'))+')';
+  $('bu_plBaus').textContent = eur(uniteB*membresB)+'  ('+membresB+' × '+eur(uniteB)+')';
 
   const eff1 = num('bu_rev1')>0 ? (total*p1/100)/num('bu_rev1') : 0;
   const eff2 = num('bu_rev2')>0 ? (total*(100-p1)/100)/num('bu_rev2') : 0;
@@ -1826,7 +1869,7 @@ function assistant(){
 
 function appliquerAssistant(){
   const {a, b2, k, ria} = assistant();
-  $('p_revenu').value = Math.round(ria);
+  if($('p_source').value === 'auto') $('p_revenu').value = Math.round(ria);
   $('c_init').value = Math.round(k.epargne);
   $('o_init').value = Math.round(k.obligation);
   $('v_init').value = Math.round(k.av);
@@ -2087,8 +2130,9 @@ function calcAllInterne(){
   const avecProjet = $('as_projet').value !== 'aucun';
   $('as_achatWrap').style.display  = avecProjet ? '' : 'none';
   $('as_apportWrap').style.display = avecProjet ? '' : 'none';
-  calcProfil();
   calcBudget();
+  estimerRevenu();
+  calcProfil();
   assistant();
   calcEpargne();
   calcBausparen();
