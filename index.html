@@ -231,7 +231,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>Épargne · ETF · Retraite — 7 supports comparés</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 2.8 — 5 septembre 2026</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 3.0 — 8 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -427,6 +427,14 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" inputmode="decimal" id="as_pv"><span class="unit">%</span></div></div>
     <div class="field"><label>Part du solde en assurance-vie art. 111</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="as_av"><span class="unit">%</span></div></div>
+    <div class="field"><label>Tolérance au risque sur la part projet</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_risque"><span class="unit">%</span></div>
+      <div class="hint">0 % : tout en support à capital garanti. 100 % : tout en ETF. Le support
+        garanti dépend de l'horizon — épargne-logement au-delà de 8 ans, dépôts à terme de 2 à
+        8 ans, compte d'épargne en dessous. Lequel l'emporte dépend entièrement des rendements que
+        vous saisissez : à écart faible, la déduction du support garanti gagne ; à écart important,
+        l'ETF domine.</div>
+    </div>
 
     <div class="field"><label>Rebasculer l'épargne une fois la réserve atteinte</label>
       <div class="wrap"><select id="as_bascule">
@@ -819,11 +827,24 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" inputmode="decimal" id="b_rend"><span class="unit">%</span></div></div>
     <div class="field"><label>Économie d'impôt réinvestie</label>
       <div class="wrap"><select id="b_reinv"><option value="1">Oui — replacée au même rendement</option><option value="0">Non — consommée</option></select><span class="unit">▾</span></div></div>
-    <div class="field"><label>Revenu imposable du ménage à la sortie</label>
-      <div class="wrap"><input type="text" inputmode="decimal" id="b_revSortie"><span class="unit">€</span></div>
-      <div class="hint">L'impôt de sortie est la <b>moitié de votre taux moyen de l'année où vous
-        encaissez</b>. En retraite les revenus baissent, donc le taux moyen aussi : sortir tard coûte
-        moins cher. Laissez 0 pour utiliser votre revenu actuel.</div>
+    <div class="field"><label>Revenu du ménage à la sortie</label>
+      <div class="wrap"><select id="b_srcSortie">
+        <option value="auto">Projeté par l'app — revenu indexé × taux de remplacement</option>
+        <option value="manuel">Saisi manuellement</option>
+      </select><span class="unit">▾</span></div></div>
+    <div class="field" id="b_wrapRempl"><label>Taux de remplacement de la pension</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="b_rempl"><span class="unit">%</span></div></div>
+    <div class="field" id="b_wrapManuel"><label>Revenu imposable retenu à la sortie</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="b_revSortie"><span class="unit">€</span></div></div>
+    <div class="line" style="padding:2px 0 10px"><span>Revenu projeté à la sortie</span><span id="b_revAff">—</span></div>
+    <div class="hint">
+      L'impôt de sortie est la <b>moitié de votre taux moyen de l'année où vous encaissez</b>. En mode
+      projeté, l'app applique votre progression de revenu sur toute la durée, puis le taux de
+      remplacement pour passer du dernier salaire à la pension. Comme les revenus baissent à la
+      retraite, le taux moyen baisse aussi : sortir tard coûte mécaniquement moins cher.
+      <br><br>Le taux de remplacement dépend de votre carrière et n'est pas garanti ; 60 à 70 % est
+      un ordre de grandeur courant pour une carrière complète. Si vous avez une estimation de pension
+      de la Caisse nationale d'assurance pension, passez en saisie manuelle et utilisez-la.
     </div>
     <div class="field"><label>Mode de sortie</label>
       <div class="wrap"><select id="b_sortie">
@@ -939,7 +960,7 @@ footer a{color:var(--dim)}
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 2.8 — 5 septembre 2026
+    Version 3.0 — 8 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -1063,7 +1084,7 @@ const DEFAUTS = {
   bu_rev1:5000, bu_rev2:4000, bu_rev3:600, bu_logement:2200, bu_charges:400, bu_alim:800, bu_transport:400, bu_assur:250,
   bu_enfants:300, bu_divers:350, bu_part1:50, bu_actif:'1',
   bu_interets:0, bu_dispo:'apres2023', bu_deduire:'1',
-  as_mois:4, as_proj:70, as_pv:35, as_av:35, as_place:0, as_bascule:'1', as_an:1, as_anAchat:2, as_apport:0,
+  as_mois:4, as_proj:70, as_pv:35, as_av:35, as_risque:0, as_place:0, as_bascule:'1', as_an:1, as_anAchat:2, as_apport:0,
   c_mens2:150, e_mens2:200, o_mens2:200, v_mens2:200, b_versement2:9000, l_cotis2:0,
   c_init:0, c_mens:150, c_taux:1.5, c_banques:1,
   l_cotis:2688, l_rend:1.5, l_reinv:'1',
@@ -1074,7 +1095,7 @@ const DEFAUTS = {
   o_init:0, o_mens:200, o_coupon:3.2, o_frais:0.2, o_banques:1, o_regime:'relibi',
   v_init:0, v_mens:200, v_rend:3.5, v_gestion:0.8, v_entree:1,
   v_prime:672, v_reinv:'1',
-  b_versement:9000, b_contrats:'2', b_revSortie:0, b_rend:4, b_reinv:'1', b_sortie:'capital'
+  b_versement:9000, b_contrats:'2', b_revSortie:0, b_srcSortie:'auto', b_rempl:70, b_rend:4, b_reinv:'1', b_sortie:'capital'
 };
 const CHAMPS = Object.keys(DEFAUTS);
 
@@ -1561,8 +1582,16 @@ function calc111bis(){
     flux.push(-vi + (reinv ? 0 : eco));
   }
 
-  // revenu de l'année de sortie : saisi, sinon le revenu actuel projeté
-  const revS = num('b_revSortie') > 0 ? num('b_revSortie') : PROFIL.revenu;
+  // revenu de l'année de sortie
+  const autoS = $('b_srcSortie').value === 'auto';
+  $('b_wrapRempl').style.display  = autoS ? '' : 'none';
+  $('b_wrapManuel').style.display = autoS ? 'none' : '';
+  const revProjete = PROFIL.revenu * Math.pow(1+CROISS, n) * Math.max(0, num('b_rempl'))/100;
+  const revS = autoS ? revProjete
+                     : (num('b_revSortie') > 0 ? num('b_revSortie') : PROFIL.revenu);
+  $('b_revAff').textContent = eur(revS) + (autoS
+      ? '  (' + eur(PROFIL.revenu*Math.pow(1+CROISS,n)) + ' × ' + nf2.format(num('b_rempl')) + ' %)'
+      : '  (saisi)');
   IDX = IDX_BASE * Math.pow(1+IDX_AN, n);       // barème de l'année de sortie
   const tmS = revS>0 ? impotClasse(revS,PROFIL.classe)*(1+tauxFPE(revS,PROFIL.classe))/revS : 0;
 
@@ -1726,19 +1755,24 @@ function assistant(){
 
   // 2 — le projet immobilier commande tout le reste
   const partProj = Math.max(0, Math.min(100, num('as_proj')))/100;
+  const risq = Math.max(0, Math.min(100, num('as_risque')))/100;   // part risquée du projet
+  let etfSup = 0;   // part du projet orientée vers l'ETF, ajoutée à la ligne ETF plus bas
   if(projet==='imminent'){
-    const liq = reste*partProj;
-    a.epargne += liq; reste -= liq;
+    const bloc = reste*partProj;
+    const liq = bloc*(1-risq);
+    a.epargne += liq; etfSup += bloc*risq; reste -= bloc;
     notes.push(['Liquidités du projet', liq,
-      'Un achat possible sous deux ans interdit tout blocage et tout risque de marché. Cet argent doit pouvoir partir chez le notaire du jour au lendemain.']);
+      'Un achat possible sous deux ans interdit tout blocage. La part que vous jugez tolérable au risque part en ETF ; le reste doit pouvoir partir chez le notaire du jour au lendemain.']);
   } else if(projet==='moyen'){
-    const dat = reste*partProj;
-    a.obligation += dat; reste -= dat;
+    const bloc = reste*partProj;
+    const dat = bloc*(1-risq);
+    a.obligation += dat; etfSup += bloc*risq; reste -= bloc;
     notes.push(['Dépôts à terme', dat,
       'Horizon connu de 2 à 8 ans : le capital est garanti et l\'échéance se cale sur l\'achat. Rendement modeste, mais aucune chance de devoir vendre à perte.']);
   } else if(projet==='long'){
-    const b = Math.min(reste*partProj, plBausM);
-    a.bauspar += b; reste -= b;
+    const bloc = reste*partProj;
+    const b = Math.min(bloc*(1-risq), plBausM);
+    a.bauspar += b; etfSup += bloc - b; reste -= bloc;
     notes.push(['Épargne-logement', b,
       'Achat au-delà de 8 ans : le contrat aura sa maturité de 10 ans, la contrainte disparaît. Déduction jusqu\'à '+eur(plBausM)+' par mois, et le plafond double tant que le plus jeune conjoint a moins de 41 ans.']);
   }
@@ -1761,9 +1795,10 @@ function assistant(){
   }
 
   // 5 — le solde en ETF capitalisant
-  if(reste > 0.5){
-    a.etf += reste;
-    notes.push(['ETF capitalisant', reste,
+  const etfTotal = reste + etfSup;
+  if(etfTotal > 0.5){
+    a.etf += etfTotal;
+    notes.push(['ETF capitalisant', etfTotal,
       'Aucune imposition au Luxembourg : ni pendant l\'épargne, ni sur la plus-value après 6 mois de détention. C\'est le support de rendement, à horizon 8 ans minimum.']);
     reste = 0;
   }
