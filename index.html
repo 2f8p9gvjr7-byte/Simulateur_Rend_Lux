@@ -231,7 +231,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>Épargne · ETF · Retraite — 7 supports comparés</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 3.0 — 8 septembre 2026</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 3.1 — 9 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -421,20 +421,31 @@ footer a{color:var(--dim)}
       librement. Tout ce qui n'est pas absorbé par eux part en ETF. Le nombre de mois de réserve se
       règle dans le budget, en haut de page.
     </div>
-    <div class="field"><label>Part de l'effort orientée vers le projet ou la sécurité</label>
-      <div class="wrap"><input type="text" inputmode="decimal" id="as_proj"><span class="unit">%</span></div></div>
-    <div class="field"><label>Part maximale bloquée en prévoyance 111bis</label>
-      <div class="wrap"><input type="text" inputmode="decimal" id="as_pv"><span class="unit">%</span></div></div>
-    <div class="field"><label>Part du solde en assurance-vie art. 111</label>
-      <div class="wrap"><input type="text" inputmode="decimal" id="as_av"><span class="unit">%</span></div></div>
-    <div class="field"><label>Tolérance au risque sur la part projet</label>
-      <div class="wrap"><input type="text" inputmode="decimal" id="as_risque"><span class="unit">%</span></div>
-      <div class="hint">0 % : tout en support à capital garanti. 100 % : tout en ETF. Le support
-        garanti dépend de l'horizon — épargne-logement au-delà de 8 ans, dépôts à terme de 2 à
-        8 ans, compte d'épargne en dessous. Lequel l'emporte dépend entièrement des rendements que
-        vous saisissez : à écart faible, la déduction du support garanti gagne ; à écart important,
-        l'ETF domine.</div>
+    <div class="hint" style="margin:-2px 0 10px">
+      Les quatre réglages ci-dessous s'appliquent <b>en cascade</b> : chacun prend sa part sur ce
+      qu'il reste après l'étape précédente. La jauge en bas montre comment votre effort se répartit
+      réellement — elle totalise toujours 100 %, il n'y a rien à équilibrer vous-même.
     </div>
+    <div class="field"><label>Étape 1 — part du solde orientée vers le projet ou la sécurité</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_proj"><span class="unit">%</span></div></div>
+    <div class="field"><label>Sur cette part projet, tolérance au risque</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_risque"><span class="unit">%</span></div>
+      <div class="hint">0 % : la part projet reste entièrement à capital garanti. 100 % : elle part
+        entièrement en ETF, au risque de devoir vendre à perte si l'achat tombe pendant un creux de
+        marché. Le support garanti dépend de l'horizon — épargne-logement au-delà de 8 ans, dépôts à
+        terme de 2 à 8 ans, compte d'épargne en dessous. Sans projet, cette étape n'a pas d'objet.</div>
+    </div>
+    <div class="field"><label>Étape 2 — sur le solde restant, part bloquée en prévoyance 111bis</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_pv"><span class="unit">%</span></div>
+      <div class="hint">Plafonnée de toute façon par le plafond légal annuel : au-delà, le surplus
+        part en ETF même si vous demandez davantage ici.</div>
+    </div>
+    <div class="field"><label>Étape 3 — sur ce qui reste ensuite, part en assurance-vie art. 111</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_av"><span class="unit">%</span></div></div>
+    <div class="hint" style="margin-top:-4px">Étape 4 — tout ce qui n'a été absorbé par aucune des
+      trois étapes précédentes part en ETF capitalisant.</div>
+
+    <div class="res" id="as_jauge" style="margin-top:14px"></div>
 
     <div class="field"><label>Rebasculer l'épargne une fois la réserve atteinte</label>
       <div class="wrap"><select id="as_bascule">
@@ -960,7 +971,7 @@ footer a{color:var(--dim)}
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 3.0 — 8 septembre 2026
+    Version 3.1 — 9 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -1777,9 +1788,9 @@ function assistant(){
       'Achat au-delà de 8 ans : le contrat aura sa maturité de 10 ans, la contrainte disparaît. Déduction jusqu\'à '+eur(plBausM)+' par mois, et le plafond double tant que le plus jeune conjoint a moins de 41 ans.']);
   }
 
-  // 3 — prévoyance 111bis, plafonnée et bornée en part de l'effort
+  // 3 — prévoyance 111bis : une part du solde restant, plafonnée par le plafond légal annuel
   const partMax = Math.max(0, Math.min(100, num('as_pv')))/100;
-  const pv = Math.min(reste, pl111bisM, cap*partMax);
+  const pv = Math.min(reste*partMax, pl111bisM);
   if(pv > 0){
     a.pv += pv; reste -= pv;
     notes.push(['Prévoyance 111bis', pv,
@@ -1898,6 +1909,25 @@ function assistant(){
     html += '<div class="hint" style="margin-top:10px"><b style="color:var(--accent)">'+nom+' — '+nf.format(Math.round(v))+' €</b><br>'+txt+'</div>';
   });
   $('as_res_bloc').innerHTML = html;
+
+  // ---- jauge : la répartition réelle de l'étape 1 (phase de reconstitution) ----
+  const JAUGE = [
+    {nom:'Épargne / liquide', v:a.epargne, c:'#5eead4'},
+    {nom:'Dépôts à terme',    v:a.obligation, c:'#60a5fa'},
+    {nom:'Épargne-logement',  v:a.bauspar, c:'#f472b6'},
+    {nom:'Prévoyance 111bis', v:a.pv, c:'#f5a623'},
+    {nom:'Assurance-vie',     v:a.av, c:'#b98cf5'},
+    {nom:'ETF capitalisant',  v:a.etf, c:'#fb7c4e'}
+  ].filter(x => x.v > 0.5);
+  const totJauge = JAUGE.reduce((s,x)=>s+x.v, 0) || 1;
+  let hj = '<div class="kt" style="color:var(--dim);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Répartition réelle de votre effort — total toujours 100 %</div>';
+  hj += '<div style="display:flex;height:18px;border-radius:9px;overflow:hidden;margin-bottom:8px">' +
+    JAUGE.map(x => '<div style="width:'+(x.v/totJauge*100)+'%;background:'+x.c+'" title="'+x.nom+'"></div>').join('') +
+    '</div>';
+  hj += JAUGE.map(x =>
+    '<div class="line" style="padding:2px 0"><span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+x.c+';margin-right:6px"></span>'+x.nom+'</span><span>'+nf2.format(x.v/totJauge*100)+' %</span></div>'
+  ).join('');
+  $('as_jauge').innerHTML = hj;
 
   return {a, b2, k, ria, anBascule:AN_BASCULE};
 }
