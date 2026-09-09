@@ -200,7 +200,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>Épargne · ETF · Retraite — 7 supports comparés</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 3.3 — 9 septembre 2026</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 3.4 — 9 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -223,6 +223,9 @@ footer a{color:var(--dim)}
 
   <div class="menages" id="menages"></div>
   <div class="pills" id="pills"></div>
+  <button class="reset" id="rapportBtn" style="background:var(--accent);border-color:var(--accent);color:#141d33;font-weight:800;margin-top:10px">
+    📄 Rapport d'orientation (PDF)
+  </button>
 </header>
 
 <main>
@@ -933,10 +936,6 @@ footer a{color:var(--dim)}
   </div>
 </div>
 
-<button class="reset" id="rapportBtn" style="border-color:var(--accent);color:var(--accent);margin-bottom:10px">
-  Rapport d'orientation (PDF)
-</button>
-
 <button class="reset" id="pdfBtn" style="border-color:var(--accent);color:var(--accent);margin-bottom:10px">
   Tableau détaillé année par année (PDF)
 </button>
@@ -945,7 +944,7 @@ footer a{color:var(--dim)}
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 3.3 — 9 septembre 2026
+    Version 3.4 — 9 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -2046,7 +2045,7 @@ function setPrintCSS(which){ $('printcss').textContent = which==='rapport' ? CSS
    luxembourgeoise : on restitue d'abord sa situation en phrases, puis on
    explique la répartition retenue et ses conséquences chiffrées. */
 
-function construireRapport(){
+function buildRapportContenu(){
   const n = +$('duree').value;
   const d = new Date().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'});
   const nomMenage = $('p_nom').value || 'Ménage';
@@ -2238,7 +2237,55 @@ function construireRapport(){
     'pas l\'avis d\'un professionnel. Les rendements et hypothèses retenus ne sont pas garantis.</div>' +
     '</div>';
 
-  $('printArea').innerHTML = html;
+  return html;
+}
+
+function construireRapport(){
+  $('printArea').innerHTML = buildRapportContenu();
+}
+
+function ouvrirRapportOnglet(){
+  const contenu = buildRapportContenu();
+  const doc = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<title>Rapport d\'orientation — Comparateur Luxembourg</title><style>' +
+    'body{font-family:Georgia,\'Times New Roman\',serif;font-size:15px;line-height:1.6;color:#1a1a1a;' +
+      'background:#fff;margin:0;padding:14px 16px 60px;max-width:760px;margin-inline:auto}' +
+    '.ent{border-bottom:3px solid #B87400;padding-bottom:10px;margin-bottom:20px}' +
+    '.ent h1{font-family:Arial,Helvetica,sans-serif;font-size:21px;color:#B87400;margin:0 0 4px}' +
+    '.ent .sub{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#555}' +
+    'h2{font-family:Arial,Helvetica,sans-serif;font-size:16.5px;color:#1E2D4A;margin:26px 0 10px;' +
+      'padding-bottom:4px;border-bottom:1px solid #ccc}' +
+    'p{margin:0 0 12px;text-align:justify}' +
+    '.situation{background:#f7f5f0;border-left:4px solid #B87400;padding:14px 16px;margin:0 0 18px;border-radius:2px}' +
+    'ul{margin:0 0 12px;padding-left:20px} li{margin-bottom:8px;text-align:justify}' +
+    'table.rap{width:100%;border-collapse:collapse;margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;' +
+      'font-size:12.5px}' +
+    'table.rap th{background:#1E2D4A;color:#fff;padding:8px 9px;text-align:right;font-size:10.5px}' +
+    'table.rap th:first-child{text-align:left}' +
+    'table.rap td{border-bottom:1px solid #ddd;padding:7px 9px;text-align:right}' +
+    'table.rap td:first-child{text-align:left}' +
+    'table.rap tr.tot td{font-weight:bold;background:#f2f4f8;border-top:2px solid #1E2D4A}' +
+    '.verdict{font-family:Arial,Helvetica,sans-serif;font-size:13.5px;font-weight:bold;color:#B87400}' +
+    '.encadre{border:1.5px solid #1E2D4A;border-radius:4px;padding:14px 16px;margin:0 0 18px}' +
+    '.encadre .tit{font-family:Arial,Helvetica,sans-serif;font-weight:bold;font-size:12.5px;color:#1E2D4A;' +
+      'margin-bottom:8px;text-transform:uppercase;letter-spacing:.3px}' +
+    '.foot{margin-top:24px;padding-top:12px;border-top:1px solid #ccc;font-family:Arial,Helvetica,sans-serif;' +
+      'font-size:10.5px;color:#666;font-style:italic}' +
+    '.barre{position:sticky;top:0;background:#1E2D4A;padding:10px 14px;margin:-14px -16px 20px;' +
+      'display:flex;justify-content:space-between;align-items:center;z-index:9}' +
+    '.barre button{background:#B87400;color:#141d33;border:0;border-radius:8px;padding:9px 14px;' +
+      'font-family:Arial,Helvetica,sans-serif;font-weight:800;font-size:12.5px;white-space:nowrap}' +
+    '.barre span{color:#fff;font-family:Arial,Helvetica,sans-serif;font-size:11.5px}' +
+    '@media print{ .barre{display:none} body{max-width:none;padding:0;margin:0} }' +
+    '</style></head><body>' +
+    '<div class="barre"><span>Rapport d\'orientation</span>' +
+    '<button onclick="window.print()">Imprimer / PDF</button></div>' +
+    contenu +
+    '</body></html>';
+  const blob = new Blob([doc], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
 }
 
 /* ================= DOCUMENT IMPRIMABLE =================
@@ -2567,9 +2614,7 @@ $('pdfBtn').addEventListener('click', ()=>{
 });
 $('rapportBtn').addEventListener('click', ()=>{
   calcAll();
-  construireRapport();
-  setPrintCSS('rapport');
-  setTimeout(()=>window.print(), 120);
+  ouvrirRapportOnglet();
 });
 $('as_apply').addEventListener('click', appliquerAssistant);
 $('btnCourant').addEventListener('click', ()=>setMode(false));
