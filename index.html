@@ -200,7 +200,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>Épargne · ETF · Retraite — 7 supports comparés</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 3.9 — 9 septembre 2026</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 4.0 — 9 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -871,6 +871,20 @@ footer a{color:var(--dim)}
   </div>
 </div>
 
+<!-- ============ AIDE À LA DÉCISION — PLAFONDS ============ -->
+<div class="card" style="border-top-color:var(--accent)">
+  <h2>Faut-il aller jusqu'au plafond ? <span class="sub">fiscal + rendement combinés</span></h2>
+  <div class="body">
+    <div class="note" style="margin:0 0 14px">
+      Pour chaque support déductible qui a encore de la marge, voici ce que donnerait le porter au
+      plafond légal : l'effort supplémentaire, l'économie d'impôt, mais surtout le capital net réel
+      compte tenu du rendement propre du contrat — comparé à ce que le même effort donnerait en ETF.
+      Une déduction généreuse ne compense pas toujours un rendement intrinsèque faible sur longue durée.
+    </div>
+    <div id="diag_plafonds"></div>
+  </div>
+</div>
+
 <!-- ============ COMPARATIF ============ -->
 <div class="card">
   <h2>Comparatif <span class="sub">à l'horizon retenu</span></h2>
@@ -962,7 +976,7 @@ footer a{color:var(--dim)}
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 3.9 — 9 septembre 2026
+    Version 4.0 — 9 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -1466,25 +1480,18 @@ function calcEpargne(){
     '<span class="tag ok">Disponible immédiatement</span>';
 }
 
-function calcBausparen(){
+/* Cœur pur de l'épargne-logement, sans écriture DOM. */
+function bausCoeur(cotisAnnuelle, cotisAnnuelle2, plafond){
   const n = +$('duree').value;
-  const membres = (PROFIL.classe==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
-  const unite = num('p_age') < 41 ? K('k_bausJ') : K('k_baus');
-  const plafond = unite * membres;
-  $('l_plafondAff').textContent = eur(plafond)+'  ('+membres+' × '+eur(unite)+')';
-
-  const cotis = num('l_cotis'), rend = num('l_rend');
-  const deductible = Math.min(cotis, plafond);
+  const rend = num('l_rend');
   const reinv = $('l_reinv').value==='1';
   let cap=0, verse=0, economie=0;
-  const flux=[0];
-  const det=[];
+  const flux=[0]; const det=[];
   for(let i=1;i<=n;i++){
     const capDeb = cap;
-    const ci = vers(i, cotis, num('l_cotis2'));
+    const ci = vers(i, cotisAnnuelle, cotisAnnuelle2);
     const di = Math.min(ci, plafond);
-    const ri = revenuAnnee(i);
-    const eco = impotSupplementaire(ri - di, di, PROFIL.classe);
+    const eco = impotSupplementaire(revenuAnnee(i) - di, di, PROFIL.classe);
     economie += eco;
     const injecte = ci + (reinv ? eco : 0);
     cap = cap*(1+rend/100) + injecte*(1+rend/200);
@@ -1493,6 +1500,19 @@ function calcBausparen(){
     flux.push(-ci + (reinv ? 0 : eco));
   }
   flux[n] += cap;
+  return {flux, verse, cap, economie, det};
+}
+
+function calcBausparen(){
+  const membres = (PROFIL.classe==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
+  const unite = num('p_age') < 41 ? K('k_bausJ') : K('k_baus');
+  const plafond = unite * membres;
+  $('l_plafondAff').textContent = eur(plafond)+'  ('+membres+' × '+eur(unite)+')';
+
+  const cotis = num('l_cotis');
+  const deductible = Math.min(cotis, plafond);
+  const {flux, verse, cap, economie, det} = bausCoeur(cotis, num('l_cotis2'), plafond);
+
   RES.bauspar = {flux, verse, brut:cap, impots:0, net:cap, economie, det};
   $('res_l').innerHTML =
     ligne('Total versé', eur(verse)) +
@@ -1504,29 +1524,21 @@ function calcBausparen(){
       ? '<div class="hint" style="color:#f87171">Cotisation supérieure au plafond : '+eur(cotis-plafond)+' par an ne sont pas déductibles.</div>' : '');
 }
 
-function calcAssuranceVie(){
+/* Cœur pur de l'assurance-vie art. 111, sans écriture DOM. */
+function avCoeur(mensAnnuel, mensAnnuel2, initVal, primeAnnuelle){
   const n = +$('duree').value;
   const rend = num('v_rend') - num('v_gestion');
   const fEntree = num('v_entree')/100;
-  const membres = (PROFIL.classe==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
-  const plafond = K('k_111') * membres;
-  $('v_plafondAff').textContent = eur(plafond)+'  ('+membres+' membres)';
-  // La déduction ne peut pas excéder ce qui est réellement versé dans l'année :
-  // elle est bornée par le plafond légal ET par les primes effectivement payées.
-  const primeSaisie = Math.min(num('v_prime'), plafond);
   const reinv = $('v_reinv').value==='1';
   let primeMoy = 0;
-
-  let cap = num('v_init')*(1-fEntree);
-  let verse = num('v_init');
+  let cap = initVal*(1-fEntree);
+  let verse = initVal;
   let economie = 0;
-  const mens = num('v_mens');
-  const flux = [-num('v_init')];
+  const flux = [-initVal];
   const det = [];
-
   for(let i=1;i<=n;i++){
-    const apports = vers(i, mens*12, num('v_mens2')*12);
-    const prime_i = Math.min(primeSaisie, apports + (i===1 ? num('v_init') : 0));
+    const apports = vers(i, mensAnnuel, mensAnnuel2);
+    const prime_i = Math.min(primeAnnuelle, apports + (i===1 ? initVal : 0));
     primeMoy += prime_i/n;
     const eco = impotSupplementaire(revenuAnnee(i) - prime_i, prime_i, PROFIL.classe);
     economie += eco;
@@ -1537,8 +1549,22 @@ function calcAssuranceVie(){
     det.push({an:i, versement:apports, eco, produits:cap-capDeb-injecte, impot:0, retrait:0, capital:cap});
     flux.push(-apports + (reinv ? 0 : eco));
   }
+  flux[n] += cap;
+  return {flux, verse, cap, economie, det, primeMoy};
+}
+
+function calcAssuranceVie(){
+  const n = +$('duree').value;
+  const membres = (PROFIL.classe==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
+  const plafond = K('k_111') * membres;
+  $('v_plafondAff').textContent = eur(plafond)+'  ('+membres+' membres)';
+  const primeSaisie = Math.min(num('v_prime'), plafond);
+  const mens = num('v_mens');
+
+  const {flux, verse, cap, economie, det, primeMoy} =
+    avCoeur(mens*12, num('v_mens2')*12, num('v_init'), primeSaisie);
+
   const net = cap;   // sortie non imposée au Luxembourg
-  flux[n] += net;
   const r = {flux, verse, brut:cap, impots:0, net, economie, det};
   RES.av = r;
 
@@ -1557,24 +1583,19 @@ function calcAssuranceVie(){
       : '');
 }
 
-function calc111bis(){
+/* Cœur pur du calcul 111bis, sans écriture DOM : réutilisé par calc111bis() pour
+   l'affichage courant, et par le diagnostic de plafond pour un scénario hypothétique. */
+function pvCoeur(versA, versA2){
   const n = +$('duree').value;
-  const versA = num('b_versement');
-  const contrats = parseInt($('b_contrats').value,10) || 1;
-  const plafond = K('k_111bis') * contrats;
-  $('b_plafondAff').textContent = eur(plafond)+'  ('+contrats+' × '+eur(K('k_111bis'))+')';
-  const deductible = Math.min(versA, plafond);
   const rend = num('b_rend');
   const reinv = $('b_reinv').value==='1';
-  const mode = $('b_sortie').value;
-
+  const plafond = K('k_111bis') * (parseInt($('b_contrats').value,10) || 1);
   let cap=0, verse=0, economie=0;
-  const flux=[0];
-  const det=[];
+  const flux=[0]; const det=[];
   for(let i=1;i<=n;i++){
     const capDeb = cap;
-    const vi = vers(i, versA, num('b_versement2'));
-    const di = Math.min(vi, plafond);          // la déduction reste bornée par le plafond légal
+    const vi = vers(i, versA, versA2);
+    const di = Math.min(vi, plafond);
     const ri = revenuAnnee(i);
     const eco = impotSupplementaire(ri - di, di, PROFIL.classe);
     economie += eco;
@@ -1584,33 +1605,52 @@ function calc111bis(){
     det.push({an:i, versement:vi, eco, produits:cap-capDeb-injecte, impot:0, retrait:0, capital:cap});
     flux.push(-vi + (reinv ? 0 : eco));
   }
+  return {flux, verse, cap, economie, det, n, plafond};
+}
 
-  // revenu de l'année de sortie
+/* Impôt de sortie du 111bis, à partir d'un capital brut donné. Pur, aucune écriture DOM. */
+function pvSortie(cap, n){
+  const mode = $('b_sortie').value;
   const autoS = $('b_srcSortie').value === 'auto';
-  $('b_wrapRempl').style.display  = autoS ? '' : 'none';
-  $('b_wrapManuel').style.display = autoS ? 'none' : '';
   const revProjete = PROFIL.revenu * Math.pow(1+CROISS, n) * Math.max(0, num('b_rempl'))/100;
-  const revS = autoS ? revProjete
-                     : (num('b_revSortie') > 0 ? num('b_revSortie') : PROFIL.revenu);
-  $('b_revAff').textContent = eur(revS) + (autoS
-      ? '  (' + eur(PROFIL.revenu*Math.pow(1+CROISS,n)) + ' × ' + nf2.format(num('b_rempl')) + ' %)'
-      : '  (saisi)');
-  IDX = IDX_BASE * Math.pow(1+IDX_AN, n);       // barème de l'année de sortie
+  const revS = autoS ? revProjete : (num('b_revSortie') > 0 ? num('b_revSortie') : PROFIL.revenu);
+  IDX = IDX_BASE * Math.pow(1+IDX_AN, n);
   const tmS = revS>0 ? impotClasse(revS,PROFIL.classe)*(1+tauxFPE(revS,PROFIL.classe))/revS : 0;
-
   let impotSortie, libelleSortie;
   if(mode==='capital'){
-    impotSortie = cap * (tmS/2);                                    // demi-taux global
+    impotSortie = cap * (tmS/2);
     libelleSortie = 'Impôt de sortie (demi-taux global '+pct(tmS/2)+')';
   }else if(mode==='rente'){
     impotSortie = impotSupplementaire(revS, cap*0.5, PROFIL.classe);
     libelleSortie = 'Impôt sur rente (moitié imposable)';
   }else{
-    // rachat anticipé non autorisé : tarif normal plein sur le capital remboursé
     impotSortie = impotSupplementaire(revS, cap, PROFIL.classe);
     libelleSortie = 'Impôt de sortie (tarif normal plein)';
   }
   resetContexte();
+  return {impotSortie, libelleSortie, revS, tmS};
+}
+
+function calc111bis(){
+  const n = +$('duree').value;
+  const versA = num('b_versement');
+  const contrats = parseInt($('b_contrats').value,10) || 1;
+  const plafond = K('k_111bis') * contrats;
+  $('b_plafondAff').textContent = eur(plafond)+'  ('+contrats+' × '+eur(K('k_111bis'))+')';
+  const deductible = Math.min(versA, plafond);
+  const mode = $('b_sortie').value;
+
+  const {flux, verse, cap, economie, det} = pvCoeur(versA, num('b_versement2'));
+
+  const autoS = $('b_srcSortie').value === 'auto';
+  $('b_wrapRempl').style.display  = autoS ? '' : 'none';
+  $('b_wrapManuel').style.display = autoS ? 'none' : '';
+
+  const {impotSortie, libelleSortie, revS, tmS} = pvSortie(cap, n);
+  $('b_revAff').textContent = eur(revS) + (autoS
+      ? '  (' + eur(PROFIL.revenu*Math.pow(1+CROISS,n)) + ' × ' + nf2.format(num('b_rempl')) + ' %)'
+      : '  (saisi)');
+
   const net = cap - impotSortie;
   flux[n] += net;
   if(det.length) det[det.length-1].impot = impotSortie;
@@ -2484,6 +2524,133 @@ const REPARTITION_TYPE = {
 };
 
 let MODE_REEL = false;
+/* ================= AIDE À LA DÉCISION — ALLER AU PLAFOND OU NON =================
+   Pour chaque support déductible, compare le scénario actuel au scénario "porté au
+   plafond", et confronte ce gain à ce que le même effort donnerait en ETF — pour que
+   la décision tienne compte du rendement intrinsèque, pas seulement de la déduction. */
+
+function equivalentETF(mensuel, n){
+  if(mensuel <= 0.5) return {verse:0, net:0};
+  const r = simulTitres({
+    duree:n, init:0, mens:mensuel, mens2:mensuel,
+    perf:num('e_perf'), frais:num('e_ter')+num('e_garde'),
+    revenuAnnuelPct:0, revenuImposable:false, revenuInclus:true,
+    qualifiant:false, rasPct:0, partSpec:0
+  });
+  return {verse:r.verse, net:r.net};
+}
+
+function diagnosticPlafonds(){
+  const n = +$('duree').value;
+  const zone = $('diag_plafonds');
+  if(!zone) return;
+
+  const lignes = [];
+
+  // ---- 111bis ----
+  {
+    const versA = num('b_versement');
+    const contrats = parseInt($('b_contrats').value,10) || 1;
+    const plafond = K('k_111bis') * contrats;
+    const marge = plafond - versA;
+    if(marge > 12){
+      const actuel = pvCoeur(versA, num('b_versement2'));
+      const actuelSortie = pvSortie(actuel.cap, n);
+      const netActuel = actuel.cap - actuelSortie.impotSortie;
+
+      const max = pvCoeur(plafond, plafond);
+      const maxSortie = pvSortie(max.cap, n);
+      const netMax = max.cap - maxSortie.impotSortie;
+
+      const deltaMensuel = marge/12;
+      const etf = equivalentETF(deltaMensuel, n);
+      const gainPV = netMax - netActuel;
+
+      lignes.push({
+        nom:'Prévoyance 111bis', couleur:'#f5a623',
+        deltaMensuel, gainSupport:gainPV, netETF:etf.net,
+        blocage:'jusqu\'à 60 ans',
+        rendement:num('b_rend')
+      });
+    }
+  }
+
+  // ---- Assurance-vie art. 111 ----
+  {
+    const membres = (PROFIL.classe==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
+    const plafond = K('k_111') * membres;
+    const primeActuelle = Math.min(num('v_prime'), plafond);
+    const marge = plafond - primeActuelle;
+    if(marge > 12){
+      const mensActuel = num('v_mens');
+      const actuel = avCoeur(mensActuel*12, num('v_mens2')*12, num('v_init'), primeActuelle);
+
+      const deltaMensuel = marge/12;
+      const mensMax = mensActuel + deltaMensuel;
+      const max = avCoeur(mensMax*12, mensMax*12, num('v_init'), plafond);
+
+      const etf = equivalentETF(deltaMensuel, n);
+      const gainAV = max.cap - actuel.cap;
+
+      lignes.push({
+        nom:'Assurance-vie art. 111', couleur:'#b98cf5',
+        deltaMensuel, gainSupport:gainAV, netETF:etf.net,
+        blocage:'aucun',
+        rendement: num('v_rend') - num('v_gestion')
+      });
+    }
+  }
+
+  // ---- Épargne-logement ----
+  {
+    const membres = (PROFIL.classe==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
+    const unite = num('p_age') < 41 ? K('k_bausJ') : K('k_baus');
+    const plafond = unite * membres;
+    const cotisActuelle = num('l_cotis');
+    const marge = plafond - cotisActuelle;
+    if(marge > 12){
+      const actuel = bausCoeur(cotisActuelle, num('l_cotis2'), plafond);
+      const max = bausCoeur(plafond, plafond, plafond);
+
+      const deltaMensuel = marge/12;
+      const etf = equivalentETF(deltaMensuel, n);
+      const gainBaus = max.cap - actuel.cap;
+
+      lignes.push({
+        nom:'Épargne-logement', couleur:'#f472b6',
+        deltaMensuel, gainSupport:gainBaus, netETF:etf.net,
+        blocage:'10 ans, logement',
+        rendement:num('l_rend')
+      });
+    }
+  }
+
+  if(lignes.length === 0){
+    zone.innerHTML = '<div class="hint">Aucun support déductible n\'a de marge sous son plafond pour le moment — ou aucun n\'est encore alimenté. Ce module s\'active dès qu\'un écart apparaît entre ce que vous versez et le plafond légal.</div>';
+    return;
+  }
+
+  let html = '';
+  lignes.forEach(l=>{
+    const ecart = l.gainSupport - l.netETF;
+    const gagnant = ecart >= 0 ? l.nom : 'l\'ETF';
+    const couleurVerdict = ecart >= 0 ? l.couleur : '#fb7c4e';
+    html += '<div style="border-left:3px solid '+l.couleur+';padding-left:11px;margin-bottom:16px">' +
+      '<div style="font-weight:800;color:'+l.couleur+';font-size:14px;margin-bottom:6px">'+l.nom+'</div>' +
+      '<div class="line"><span>Effort mensuel supplémentaire pour atteindre le plafond</span><span>'+eur(l.deltaMensuel)+'</span></div>' +
+      '<div class="line"><span>Rendement propre du contrat retenu ici</span><span>'+nf2.format(l.rendement)+' %</span></div>' +
+      '<div class="line"><span>Capital net supplémentaire si porté au plafond</span><span>'+eur(l.gainSupport)+'</span></div>' +
+      '<div class="line"><span>Le même effort, en ETF, donnerait</span><span>'+eur(l.netETF)+'</span></div>' +
+      '<div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px">' +
+        '<span>Verdict sur cette hypothèse de rendement</span>' +
+        '<span style="color:'+couleurVerdict+';font-weight:800">'+(ecart>=0?'+':'')+eur(ecart)+' pour '+gagnant+'</span></div>' +
+      '<div class="hint" style="margin-top:6px">Blocage si vous portez ce support au plafond : '+l.blocage+
+        '. Ce chiffre dépend entièrement du rendement saisi ci-dessus pour ce support : changez-le pour voir le verdict évoluer.</div>' +
+      '</div>';
+  });
+  zone.innerHTML = html;
+}
+
 function afficheGlobal(){
   const tauxActu = num('actu')/100;
   const infl = num('p_infl')/100;
@@ -2597,6 +2764,7 @@ function calcAllInterne(){
   calcObligation();
   calcAssuranceVie();
   calc111bis();
+  diagnosticPlafonds();
   const lbl = AN_BASCULE>0 ? '(dès l\'année '+(AN_BASCULE+1)+')' : '(aucune bascule)';
   ['c','e','o','v','b','l'].forEach(x=>{ const el=$(x+'_lbl2'); if(el) el.textContent = lbl; });
   afficheAllocation();
