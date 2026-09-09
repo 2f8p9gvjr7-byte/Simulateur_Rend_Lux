@@ -185,39 +185,8 @@ footer a{color:var(--dim)}
 #upd button{background:#141d33;color:var(--accent);border:0;border-radius:8px;padding:8px 14px;font-weight:700}
 .off{display:none;font-size:11px;background:rgba(248,113,113,.18);color:var(--bad);border-radius:20px;padding:2px 9px;font-weight:700}
 </style>
-<style id="printcss">
-#printArea{display:none}
-@media print{
-  @page{ size:A4 landscape; margin:9mm; }
-  body>*{ display:none !important; }
-  #printArea{ display:block !important; background:#fff; color:#000;
-    font-family:Arial,Helvetica,sans-serif; font-size:8.2pt; }
-  #printArea h1{ font-size:15pt; margin:0 0 2mm; color:#B87400; letter-spacing:.5px; }
-  #printArea h2{ font-size:11pt; margin:0 0 2mm; padding-bottom:1mm;
-    border-bottom:1.4pt solid #B87400; color:#1E2D4A; }
-  #printArea .sub{ font-size:8pt; color:#555; margin:0 0 3mm; }
-  #printArea .hyp{ width:100%; border-collapse:collapse; margin:0 0 4mm; }
-  #printArea .hyp td{ border:.4pt solid #bbb; padding:1mm 1.6mm; font-size:7.6pt; }
-  #printArea .hyp td:nth-child(odd){ background:#f2f4f8; font-weight:bold; width:13%; }
-  #printArea table.dcf{ width:100%; border-collapse:collapse; }
-  #printArea table.dcf th{ background:#1E2D4A; color:#fff; font-size:7pt; padding:1.2mm .8mm;
-    text-align:right; border:.4pt solid #1E2D4A; }
-  #printArea table.dcf th:first-child{ text-align:left; }
-  #printArea table.dcf td{ border:.4pt solid #ccc; padding:1mm .8mm; text-align:right;
-    font-size:7.4pt; }
-  #printArea table.dcf td:first-child{ text-align:left; }
-  #printArea table.dcf tr:nth-child(even) td{ background:#f7f8fb; }
-  #printArea table.dcf tr.tot td{ font-weight:bold; background:#e8ecf4 !important;
-    border-top:1pt solid #1E2D4A; }
-  #printArea .page{ page-break-after:always; }
-  #printArea .page:last-child{ page-break-after:auto; }
-  #printArea .foot{ margin-top:3mm; font-size:6.8pt; color:#666; font-style:italic; }
-  #printArea .kpi{ display:flex; gap:4mm; margin:0 0 3mm; }
-  #printArea .kpi div{ border:.6pt solid #B87400; padding:1.4mm 2.4mm; }
-  #printArea .kpi b{ display:block; font-size:10pt; }
-  #printArea .kpi span{ font-size:6.8pt; color:#555; text-transform:uppercase; letter-spacing:.4px; }
-}
-</style>
+<style id="printbase">#printArea{display:none}</style>
+<style id="printcss"></style>
 </head>
 <body>
 
@@ -231,7 +200,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>Épargne · ETF · Retraite — 7 supports comparés</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 3.1 — 9 septembre 2026</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 3.3 — 9 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -445,6 +414,7 @@ footer a{color:var(--dim)}
     <div class="hint" style="margin-top:-4px">Étape 4 — tout ce qui n'a été absorbé par aucune des
       trois étapes précédentes part en ETF capitalisant.</div>
 
+    <div class="res" id="as_cascade" style="margin-top:12px"></div>
     <div class="res" id="as_jauge" style="margin-top:14px"></div>
 
     <div class="field"><label>Rebasculer l'épargne une fois la réserve atteinte</label>
@@ -963,6 +933,10 @@ footer a{color:var(--dim)}
   </div>
 </div>
 
+<button class="reset" id="rapportBtn" style="border-color:var(--accent);color:var(--accent);margin-bottom:10px">
+  Rapport d'orientation (PDF)
+</button>
+
 <button class="reset" id="pdfBtn" style="border-color:var(--accent);color:var(--accent);margin-bottom:10px">
   Tableau détaillé année par année (PDF)
 </button>
@@ -971,7 +945,7 @@ footer a{color:var(--dim)}
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 3.1 — 9 septembre 2026
+    Version 3.3 — 9 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -1730,6 +1704,8 @@ function netVersImposable(net, classe){
   return Math.max(0, brut - brut*0.1145 - 540);
 }
 
+let NOTES_ASSISTANT = [];   // notes de la dernière répartition, réutilisées par le rapport
+let CASCADE = {};           // montants intermédiaires de la cascade, pour l'affichage sous les champs
 function assistant(){
   const cap = num('as_cap'), dep = num('as_dep'), res = num('as_res');
   const projet = $('as_projet').value;
@@ -1765,6 +1741,7 @@ function assistant(){
   }
 
   // 2 — le projet immobilier commande tout le reste
+  CASCADE.r0 = reste;
   const partProj = Math.max(0, Math.min(100, num('as_proj')))/100;
   const risq = Math.max(0, Math.min(100, num('as_risque')))/100;   // part risquée du projet
   let etfSup = 0;   // part du projet orientée vers l'ETF, ajoutée à la ligne ETF plus bas
@@ -1788,6 +1765,11 @@ function assistant(){
       'Achat au-delà de 8 ans : le contrat aura sa maturité de 10 ans, la contrainte disparaît. Déduction jusqu\'à '+eur(plBausM)+' par mois, et le plafond double tant que le plus jeune conjoint a moins de 41 ans.']);
   }
 
+  CASCADE.projetPris = CASCADE.r0 - reste;
+  CASCADE.projetGaranti = CASCADE.projetPris - etfSup;
+  CASCADE.projetEtf = etfSup;
+  CASCADE.r1 = reste;
+
   // 3 — prévoyance 111bis : une part du solde restant, plafonnée par le plafond légal annuel
   const partMax = Math.max(0, Math.min(100, num('as_pv')))/100;
   const pv = Math.min(reste*partMax, pl111bisM);
@@ -1796,6 +1778,7 @@ function assistant(){
     notes.push(['Prévoyance 111bis', pv,
       'Déductible au taux marginal, donc le meilleur rendement immédiat. Mais bloqué jusqu\'à 60 ans : jamais au-delà du plafond de '+eur(pl111bisM)+' par mois, et jamais au point d\'assécher le reste.']);
   }
+  CASCADE.pv = pv; CASCADE.r2 = reste;
 
   // 4 — assurance-vie art. 111, souple et déductible
   const av = Math.min(reste*Math.max(0, Math.min(100, num('as_av')))/100, pl111M);
@@ -1804,9 +1787,11 @@ function assistant(){
     notes.push(['Assurance-vie art. 111', av,
       'Déductible jusqu\'à '+eur(pl111M)+' par mois, sans blocage ni âge de sortie, non imposée au rachat. Ce plafond est partagé avec vos primes RC et santé.']);
   }
+  CASCADE.av = av; CASCADE.r3 = reste;
 
   // 5 — le solde en ETF capitalisant
   const etfTotal = reste + etfSup;
+  CASCADE.etfTotal = etfTotal;
   if(etfTotal > 0.5){
     a.etf += etfTotal;
     notes.push(['ETF capitalisant', etfTotal,
@@ -1908,6 +1893,25 @@ function assistant(){
     if(v < 0.5) return;
     html += '<div class="hint" style="margin-top:10px"><b style="color:var(--accent)">'+nom+' — '+nf.format(Math.round(v))+' €</b><br>'+txt+'</div>';
   });
+  NOTES_ASSISTANT = notes.filter(([,v]) => v > 0.5);
+
+  // ---- détail chiffré de la cascade, affiché juste sous les quatre champs ----
+  const C = CASCADE;
+  let hc = '<div class="kt" style="color:var(--dim);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Ce que ces pourcentages donnent en euros</div>';
+  if(projet === 'aucun'){
+    hc += '<div class="line"><span>Étape 1 sans objet — pas de projet</span><span>'+eur(C.r0)+' reste entier</span></div>';
+  } else {
+    hc += '<div class="line"><span>Étape 1 — '+nf2.format(num('as_proj'))+' % de '+eur(C.r0)+'</span><span>'+eur(C.projetPris)+'</span></div>';
+    if(C.projetEtf > 0.5){
+      hc += '<div class="line" style="padding-left:14px"><span>dont garanti / dont ETF</span><span>'+eur(C.projetGaranti)+' / '+eur(C.projetEtf)+'</span></div>';
+    }
+  }
+  hc += '<div class="line"><span>Reste après étape 1</span><span>'+eur(C.r1)+'</span></div>';
+  hc += '<div class="line"><span>Étape 2 — '+nf2.format(num('as_pv'))+' % de '+eur(C.r1)+'</span><span>'+eur(C.pv)+'</span></div>';
+  hc += '<div class="line"><span>Reste après étape 2</span><span>'+eur(C.r2)+'</span></div>';
+  hc += '<div class="line"><span>Étape 3 — '+nf2.format(num('as_av'))+' % de '+eur(C.r2)+'</span><span>'+eur(C.av)+'</span></div>';
+  hc += '<div class="line" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px"><span>Étape 4 — solde vers l\'ETF</span><span style="color:var(--accent);font-weight:800">'+eur(C.etfTotal)+'</span></div>';
+  $('as_cascade').innerHTML = hc;
   $('as_res_bloc').innerHTML = html;
 
   // ---- jauge : la répartition réelle de l'étape 1 (phase de reconstitution) ----
@@ -1957,6 +1961,285 @@ function appliquerAssistant(){
   $('card-assistant').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
+
+
+/* ================= DEUX FEUILLES DE STYLE D'IMPRESSION =================
+   Le CSS d'impression est réécrit au moment de générer chaque document,
+   pour que l'orientation de page et la mise en forme correspondent à celui
+   qu'on vient de demander, quel que soit l'ordre des clics précédents. */
+
+const CSS_DCF = `
+@media print{
+  @page{ size:A4 landscape; margin:9mm; }
+  html, body{ background:#fff !important; }
+  body>*{ display:none !important; }
+  #printArea{ display:block !important; background:#fff; color:#000;
+    font-family:Arial,Helvetica,sans-serif; font-size:8.2pt; }
+  #printArea h1{ font-size:15pt; margin:0 0 2mm; color:#B87400; letter-spacing:.5px; }
+  #printArea h2{ font-size:11pt; margin:0 0 2mm; padding-bottom:1mm;
+    border-bottom:1.4pt solid #B87400; color:#1E2D4A; }
+  #printArea .sub{ font-size:8pt; color:#555; margin:0 0 3mm; }
+  #printArea .hyp{ width:100%; border-collapse:collapse; margin:0 0 4mm; }
+  #printArea .hyp td{ border:.4pt solid #bbb; padding:1mm 1.6mm; font-size:7.6pt; }
+  #printArea .hyp td:nth-child(odd){ background:#f2f4f8; font-weight:bold; width:13%; }
+  #printArea table.dcf{ width:100%; border-collapse:collapse; }
+  #printArea table.dcf th{ background:#1E2D4A; color:#fff; font-size:7pt; padding:1.2mm .8mm;
+    text-align:right; border:.4pt solid #1E2D4A; }
+  #printArea table.dcf th:first-child{ text-align:left; }
+  #printArea table.dcf td{ border:.4pt solid #ccc; padding:1mm .8mm; text-align:right;
+    font-size:7.4pt; }
+  #printArea table.dcf td:first-child{ text-align:left; }
+  #printArea table.dcf tr:nth-child(even) td{ background:#f7f8fb; }
+  #printArea table.dcf tr.tot td{ font-weight:bold; background:#e8ecf4 !important;
+    border-top:1pt solid #1E2D4A; }
+  #printArea .page{ page-break-after:always; }
+  #printArea .page:last-child{ page-break-after:auto; }
+  #printArea .foot{ margin-top:3mm; font-size:6.8pt; color:#666; font-style:italic; }
+  #printArea .kpi{ display:flex; gap:4mm; margin:0 0 3mm; }
+  #printArea .kpi div{ border:.6pt solid #B87400; padding:1.4mm 2.4mm; }
+  #printArea .kpi b{ display:block; font-size:10pt; }
+  #printArea .kpi span{ font-size:6.8pt; color:#555; text-transform:uppercase; letter-spacing:.4px; }
+}`;
+
+const CSS_RAPPORT = `
+@media print{
+  @page{ size:A4 portrait; margin:20mm 18mm; }
+  html, body{ background:#fff !important; }
+  body>*{ display:none !important; }
+  #printArea{ display:block !important; background:#fff; color:#1a1a1a;
+    font-family:Georgia,'Times New Roman',serif; font-size:10.3pt; line-height:1.5; }
+  #printArea .ent{ border-bottom:2pt solid #B87400; padding-bottom:4mm; margin-bottom:6mm; }
+  #printArea .ent h1{ font-family:Arial,Helvetica,sans-serif; font-size:17pt; color:#B87400;
+    margin:0 0 1.5mm; letter-spacing:.3px; }
+  #printArea .ent .sub{ font-family:Arial,Helvetica,sans-serif; font-size:8.6pt; color:#555; }
+  #printArea h2{ font-family:Arial,Helvetica,sans-serif; font-size:12.5pt; color:#1E2D4A;
+    margin:7mm 0 3mm; padding-bottom:1.2mm; border-bottom:.8pt solid #ccc; }
+  #printArea p{ margin:0 0 3mm; text-align:justify; }
+  #printArea .situation{ background:#f7f5f0; border-left:3pt solid #B87400; padding:4mm 5mm;
+    margin:0 0 5mm; }
+  #printArea ul{ margin:0 0 3mm; padding-left:5mm; }
+  #printArea li{ margin-bottom:1.8mm; text-align:justify; }
+  #printArea table.rap{ width:100%; border-collapse:collapse; margin:0 0 4mm;
+    font-family:Arial,Helvetica,sans-serif; font-size:9pt; }
+  #printArea table.rap th{ background:#1E2D4A; color:#fff; padding:2mm 2.5mm; text-align:right;
+    font-size:8pt; }
+  #printArea table.rap th:first-child{ text-align:left; }
+  #printArea table.rap td{ border-bottom:.4pt solid #ddd; padding:1.8mm 2.5mm; text-align:right; }
+  #printArea table.rap td:first-child{ text-align:left; }
+  #printArea table.rap tr.tot td{ font-weight:bold; background:#f2f4f8;
+    border-top:1pt solid #1E2D4A; }
+  #printArea .verdict{ font-family:Arial,Helvetica,sans-serif; font-size:9.6pt; font-weight:bold;
+    color:#B87400; }
+  #printArea .encadre{ border:.8pt solid #1E2D4A; border-radius:1mm; padding:4mm 5mm; margin:0 0 5mm; }
+  #printArea .encadre .tit{ font-family:Arial,Helvetica,sans-serif; font-weight:bold; font-size:9.4pt;
+    color:#1E2D4A; margin-bottom:2mm; text-transform:uppercase; letter-spacing:.3px; }
+  #printArea .page{ page-break-after:always; } #printArea .page:last-child{ page-break-after:auto; }
+  #printArea .foot{ margin-top:6mm; padding-top:3mm; border-top:.6pt solid #ccc;
+    font-family:Arial,Helvetica,sans-serif; font-size:7.6pt; color:#666; font-style:italic; }
+}`;
+
+function setPrintCSS(which){ $('printcss').textContent = which==='rapport' ? CSS_RAPPORT : CSS_DCF; }
+
+
+/* ================= RAPPORT D'ORIENTATION =================
+   Un document narratif, pensé pour quelqu'un qui ne connaît pas la fiscalité
+   luxembourgeoise : on restitue d'abord sa situation en phrases, puis on
+   explique la répartition retenue et ses conséquences chiffrées. */
+
+function construireRapport(){
+  const n = +$('duree').value;
+  const d = new Date().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'});
+  const nomMenage = $('p_nom').value || 'Ménage';
+  const classe = $('p_classe').value;
+  const enfants = Math.max(0, num('p_enfants'));
+  const age = num('p_age');
+  const revenuNet = num('as_net');
+  const dispoImm = num('as_res') || 0;
+  const place = num('as_place');
+  const risque = Math.max(0, Math.min(100, num('as_risque')));
+  const projetCode = $('as_projet').value;
+  const anAchat = num('as_anAchat');
+  const apport = num('as_apport');
+  const interets = num('bu_interets') || 0;
+  const dispoLog = $('bu_dispo') ? $('bu_dispo').selectedIndex : 0;
+
+  // ---------- phrases de situation, construites à partir des saisies ----------
+  const situC = classe==='2' ? 'marié\u00b7e ou lié\u00b7e par un partenariat, en imposition collective'
+                              : 'imposé\u00b7e individuellement';
+  const situE = enfants===0 ? 'sans enfant à charge'
+              : enfants===1 ? 'avec un enfant à charge'
+              : 'avec ' + enfants + ' enfants à charge';
+
+  let phraseLogement = '';
+  if(interets > 0){
+    const libDispo = ['mise à disposition après 2023, ouvrant droit à une déduction intégrale des intérêts',
+                       'mise à disposition entre 2020 et 2023, plafonnée à 4\u00a0000\u00a0€ par personne',
+                       'mise à disposition entre 2015 et 2019, plafonnée à 3\u00a0000\u00a0€ par personne',
+                       'mise à disposition avant 2015, plafonnée à 2\u00a0000\u00a0€ par personne'][dispoLog] || '';
+    phraseLogement = 'Vous êtes propriétaire de votre résidence principale, ' + libDispo +
+      '. Vous réglez ' + eur(interets) + ' d\'intérêts d\'emprunt par an.';
+  } else {
+    phraseLogement = 'Vous n\'avez pas signalé d\'emprunt en cours sur votre résidence principale.';
+  }
+
+  let phraseProjet = '';
+  if(projetCode === 'aucun'){
+    phraseProjet = 'Vous n\'envisagez pas de nouveau projet immobilier à l\'horizon de cette simulation.';
+  } else {
+    const horizon = {imminent:'dans les deux prochaines années', moyen:'entre deux et huit ans',
+                      long:'au-delà de huit ans'}[projetCode];
+    phraseProjet = 'Vous envisagez un nouveau projet immobilier ' + horizon +
+      (anAchat>0 ? ', concrètement autour de l\'année ' + anAchat : '') +
+      (apport>0 ? ', avec un apport d\'environ ' + eur(apport) + ' prélevé sur votre épargne à ce moment-là.' : '.');
+  }
+
+  const phraseLiquide = 'Vous disposez aujourd\'hui de ' + eur(dispoImm) + ' de liquidités immédiates' +
+    (place>0 ? ', et de ' + eur(place) + ' supplémentaires déjà placés et mobilisables si nécessaire.' : '.');
+
+  const phraseRisque = 'Sur la part de votre épargne consacrée à ce projet, vous situez votre tolérance ' +
+    'au risque à ' + risque + '\u00a0% \u2014 c\'est-à-dire que ' + risque +
+    '\u00a0% de cette part accepterait une fluctuation de marché en échange d\'un meilleur rendement, ' +
+    'le solde restant sur un support à capital garanti.';
+
+  // ---------- diagnostic fiscal ----------
+  const hyp = '<div class="situation">' +
+    '<p>Vous êtes ' + situC + ', ' + situE + '. ' + phraseLogement + '</p>' +
+    '<p>' + phraseProjet + '</p>' +
+    '<p>' + phraseLiquide + (projetCode!=='aucun' ? ' ' + phraseRisque : '') + '</p>' +
+    '</div>';
+
+  const diag = '<table class="rap"><tbody>' +
+    '<tr><td>Revenu net annuel encaissé</td><td>' + eur(revenuNet) + '</td></tr>' +
+    '<tr><td>Revenu imposable retenu</td><td>' + eur(PROFIL.revenu) + '</td></tr>' +
+    '<tr><td>Impôt annuel</td><td>' + eur(PROFIL.tot) + '</td></tr>' +
+    '<tr><td>Taux moyen d\'imposition</td><td>' + pct(PROFIL.tauxMoyen) + '</td></tr>' +
+    '<tr class="tot"><td>Taux marginal \u2014 valeur de chaque euro déduit</td><td>' + pct(PROFIL.tmi) + '</td></tr>' +
+    '</tbody></table>';
+
+  // ---------- allocation recommandée, à partir des notes déjà calculées ----------
+  let allocRows = '', allocTxt = '';
+  let totalMensuel = 0;
+  NOTES_ASSISTANT.forEach(([nom, v]) => { totalMensuel += v; });
+  NOTES_ASSISTANT.forEach(([nom, v, txt]) => {
+    allocRows += '<tr><td>' + nom + '</td><td>' + eur(v) + '</td><td>' +
+      (totalMensuel>0 ? pct(v/totalMensuel) : '—') + '</td></tr>';
+    allocTxt += '<li><b>' + nom + ', ' + eur(v) + ' par mois.</b> ' + txt + '</li>';
+  });
+  const alloc = '<table class="rap"><thead><tr><th>Support</th><th>Par mois</th><th>Part</th></tr></thead>' +
+    '<tbody>' + allocRows +
+    '<tr class="tot"><td>Effort total</td><td>' + eur(totalMensuel) + '</td><td>100\u00a0%</td></tr>' +
+    '</tbody></table>';
+
+  // ---------- résultats attendus ----------
+  const actu = num('actu')/100, infl = num('p_infl')/100;
+  let resRows = '', meilleur = null;
+  SUPPORTS.forEach(sup => {
+    const r = RES[sup.k];
+    if(!r || r.verse<=0) return;
+    const netReel = r.net/Math.pow(1+infl, n);
+    if(!meilleur || r.net > meilleur.net) meilleur = {nom:sup.nom, net:r.net, tri:r.tri};
+    resRows += '<tr><td>' + sup.nom + '</td><td>' + eur(r.verse) + '</td><td>' + eur(r.net) + '</td>' +
+      '<td>' + eur(netReel) + '</td><td>' + (isFinite(r.tri)?pct(r.tri):'—') + '</td></tr>';
+  });
+  const resultats = '<table class="rap"><thead><tr><th>Support</th><th>Versé</th>' +
+    '<th>Capital net</th><th>En euros d\'aujourd\'hui</th><th>TRI net</th></tr></thead><tbody>' +
+    resRows + '</tbody></table>';
+
+  // ---------- aspects fiscaux, choisis selon ce qui est réellement utilisé ----------
+  let fiscal = '<ul>';
+  const util = k => RES[k] && RES[k].verse > 0;
+  if(util('etf') || util('action')){
+    fiscal += '<li>Au Luxembourg, une plus-value sur titres détenus plus de six mois est ' +
+      '<b>exonérée d\'impôt</b>, sans plafond. C\'est la règle qui rend un support comme l\'ETF ' +
+      'capitalisant particulièrement efficace sur longue durée.</li>';
+  }
+  if(util('pv')){
+    const modeS = $('b_sortie').options[$('b_sortie').selectedIndex].text;
+    fiscal += '<li>La prévoyance-vieillesse (111bis) est déductible du revenu imposable, au taux ' +
+      'marginal de ' + pct(PROFIL.tmi) + ' actuellement. En contrepartie, le capital est ' +
+      '<b>bloqué jusqu\'à 60 ans</b> au plus tôt. Mode de sortie retenu dans cette simulation : ' +
+      modeS.toLowerCase() + '.</li>';
+  }
+  if(util('av')){
+    fiscal += '<li>L\'assurance-vie de l\'article 111 est déductible dans une limite modeste, ' +
+      'partagée avec vos primes de responsabilité civile et d\'assurance santé. Elle n\'est en ' +
+      'revanche soumise à <b>aucun blocage</b> et sa sortie n\'est pas imposée.</li>';
+  }
+  if(util('bauspar')){
+    fiscal += '<li>L\'épargne-logement est déductible selon la composition du ménage, mais suppose ' +
+      'un <b>blocage de dix ans</b> et une affectation au logement personnel.</li>';
+  }
+  if(util('epargne') || util('obligation')){
+    fiscal += '<li>Les intérêts d\'un compte d\'épargne ou d\'un dépôt à terme subissent une retenue ' +
+      'de 20\u00a0% au-delà d\'une franchise annuelle par banque. Le rendement réel, une fois ' +
+      'l\'inflation déduite, reste généralement faible ou négatif : cette poche sert la sécurité, ' +
+      'pas la performance.</li>';
+  }
+  if(interets > 0){
+    fiscal += '<li>Les intérêts de votre emprunt immobilier sont déductibles de votre revenu ' +
+      'imposable, ce qui explique une partie du taux retenu ci-dessus.</li>';
+  }
+  fiscal += '</ul>';
+
+  // ---------- points de vigilance ----------
+  let vigil = '<ul>';
+  if($('p_source').value === 'auto'){
+    vigil += '<li>Le revenu imposable utilisé ici est une <b>estimation</b> à partir du revenu net. ' +
+      'Remplacez-le par le montant exact de votre bulletin d\'imposition dès que vous l\'avez, dans ' +
+      'la carte Profil fiscal.</li>';
+  }
+  if(util('pv')){
+    vigil += '<li>Le plafond de 4\u00a0500\u00a0€ retenu pour la prévoyance-vieillesse est à confirmer ' +
+      'sur guichet.public.lu avant tout versement.</li>' +
+      '<li>Le rendement net réel du contrat 111bis envisagé, frais déduits, doit être obtenu par écrit ' +
+      'auprès de l\'assureur : c\'est lui qui détermine si ce support est réellement avantageux sur ' +
+      'la durée simulée.</li>';
+  }
+  if(interets > 0 && dispoLog <= 1){
+    vigil += '<li>Vérifiez auprès de l\'Administration des contributions directes le plafond exact ' +
+      'applicable à votre situation, les règles ayant évolué en 2024.</li>';
+  }
+  vigil += '<li>Cette simulation retient un rendement de ' + nf2.format(num('e_perf')) + ' \u00a0% pour l\'ETF et de ' +
+    nf2.format(num('b_rend')) + ' \u00a0% pour le 111bis : ce sont des hypothèses de travail, pas des garanties.</li>';
+  vigil += '</ul>';
+
+  const verdict = meilleur
+    ? '<p class="verdict">Sur les hypothèses retenues, ' + meilleur.nom + ' offre le capital net le ' +
+      'plus élevé à l\'échéance : ' + eur(meilleur.net) + (isFinite(meilleur.tri)?' (TRI net '+pct(meilleur.tri)+')':'') +
+      '. Ce n\'est pas nécessairement la meilleure combinaison pour vous : la répartition retenue ' +
+      'ci-dessus tient compte de votre besoin de liquidité et de votre tolérance au risque, pas ' +
+      'seulement du rendement.</p>'
+    : '';
+
+  const html =
+    '<div class="page">' +
+    '<div class="ent"><h1>Rapport d\'orientation patrimoniale</h1>' +
+    '<div class="sub">' + nomMenage + ' \u2014 établi le ' + d + ' \u2014 simulation sur ' + n +
+    ' ans \u2014 Comparateur Luxembourg</div></div>' +
+
+    '<h2>Votre situation</h2>' + hyp +
+
+    '<h2>Votre situation fiscale</h2>' + diag +
+
+    '<h2>Répartition d\'épargne recommandée</h2>' + alloc +
+    '<ul>' + allocTxt + '</ul>' +
+    '<p style="font-size:8.6pt;color:#777;font-family:Arial,Helvetica,sans-serif">Pour que les ' +
+    'résultats ci-dessous reflètent exactement cette proposition, touchez « Appliquer cette ' +
+    'répartition » dans l\'assistant avant de générer ce rapport.</p>' +
+
+    '<h2>Résultats attendus à l\'échéance</h2>' + resultats + verdict +
+
+    '<h2>Ce que cela implique fiscalement</h2>' + fiscal +
+
+    '<div class="encadre"><div class="tit">Points à vérifier avant de décider</div>' + vigil + '</div>' +
+
+    '<div class="foot">Document généré automatiquement à partir des paramètres saisis dans ' +
+    'l\'application, à titre pédagogique. Il ne constitue pas un conseil personnalisé et ne remplace ' +
+    'pas l\'avis d\'un professionnel. Les rendements et hypothèses retenus ne sont pas garantis.</div>' +
+    '</div>';
+
+  $('printArea').innerHTML = html;
+}
 
 /* ================= DOCUMENT IMPRIMABLE =================
    Un tableau de type plan de financement par support : ressources
@@ -2279,6 +2562,13 @@ $('as_projet').addEventListener('change', ()=>{
 $('pdfBtn').addEventListener('click', ()=>{
   calcAll();
   construirePDF();
+  setPrintCSS('dcf');
+  setTimeout(()=>window.print(), 120);
+});
+$('rapportBtn').addEventListener('click', ()=>{
+  calcAll();
+  construireRapport();
+  setPrintCSS('rapport');
   setTimeout(()=>window.print(), 120);
 });
 $('as_apply').addEventListener('click', appliquerAssistant);
