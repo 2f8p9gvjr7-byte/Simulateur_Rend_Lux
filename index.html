@@ -200,7 +200,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>Épargne · ETF · Retraite — 7 supports comparés</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 4.0 — 9 septembre 2026</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 4.1 — 9 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -976,7 +976,7 @@ footer a{color:var(--dim)}
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 4.0 — 9 septembre 2026
+    Version 4.1 — 9 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -1104,15 +1104,15 @@ const DEFAUTS = {
   as_mois:4, as_filet:0, as_proj:70, as_pv:35, as_av:35, as_risque:0, as_place:0, as_bascule:'1', as_an:1, as_anAchat:2, as_apport:0,
   c_mens2:150, e_mens2:200, o_mens2:200, v_mens2:200, b_versement2:9000, l_cotis2:0,
   c_init:0, c_mens:150, c_taux:1.5, c_banques:1,
-  l_cotis:2688, l_rend:1.5, l_reinv:'1',
+  l_cotis:0, l_rend:1.5, l_reinv:'1',
   a_init:0, a_mens:200, a_croiss:5, a_div:2, a_frais:0.3,
   a_qual:'1', a_ras:15, a_spec:0,
   e_init:0, e_mens:200, e_perf:7, e_ter:0.22, e_garde:0.15,
   e_type:'cap', e_divpart:30, e_spec:0,
   o_init:0, o_mens:200, o_coupon:3.2, o_frais:0.2, o_banques:1, o_regime:'relibi',
   v_init:0, v_mens:200, v_rend:3.5, v_gestion:0.8, v_entree:1,
-  v_prime:672, v_reinv:'1',
-  b_versement:9000, b_contrats:'2', b_revSortie:0, b_srcSortie:'auto', b_rempl:70, b_rend:4, b_reinv:'1', b_sortie:'capital'
+  v_prime:0, v_reinv:'1',
+  b_versement:0, b_contrats:'2', b_revSortie:0, b_srcSortie:'auto', b_rempl:70, b_rend:4, b_reinv:'1', b_sortie:'capital'
 };
 const CHAMPS = Object.keys(DEFAUTS);
 
