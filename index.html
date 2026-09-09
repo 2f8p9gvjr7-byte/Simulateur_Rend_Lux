@@ -200,7 +200,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>Épargne · ETF · Retraite — 7 supports comparés</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 3.4 — 9 septembre 2026</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 3.9 — 9 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -285,6 +285,17 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" inputmode="decimal" id="bu_enfants"><span class="unit">€</span></div></div>
     <div class="field"><label>Loisirs, vacances, divers</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="bu_divers"><span class="unit">€</span></div></div>
+
+    <div class="sect" style="border-left-color:#5eead4">Épargne déjà engagée</div>
+    <div class="field"><label>Versements déjà en cours vers un contrat existant</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_engage"><span class="unit">€</span></div>
+      <div class="hint">111bis, assurance-vie ou épargne-logement déjà souscrits par l'un ou l'autre
+        conjoint. Ce n'est pas une dépense de vie courante — cette somme reste de l'épargne — mais
+        elle n'est plus disponible pour un nouvel arbitrage. Elle réduit la capacité d'épargne libre,
+        sans entrer dans le calcul de la réserve de précaution. Reportez le même montant dans le
+        champ « Versement annuel » du support concerné, pour qu'il soit bien pris en compte dans la
+        simulation fiscale et le calcul du capital final.</div>
+    </div>
 
     <div class="sect" style="border-left-color:#5eead4">Intérêts d'emprunt — résidence principale</div>
     <div class="field"><label>Intérêts payés dans l'année</label>
@@ -397,6 +408,13 @@ footer a{color:var(--dim)}
       Les quatre réglages ci-dessous s'appliquent <b>en cascade</b> : chacun prend sa part sur ce
       qu'il reste après l'étape précédente. La jauge en bas montre comment votre effort se répartit
       réellement — elle totalise toujours 100 %, il n'y a rien à équilibrer vous-même.
+    </div>
+    <div class="field"><label>Une fois la réserve couverte, part maintenue en épargne quand même</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_filet"><span class="unit">%</span></div>
+      <div class="hint">0 % par défaut : rien n'est laissé de plus une fois la réserve atteinte,
+        puisque le rendement réel du compte d'épargne au-delà est négatif. Ne relevez ce chiffre
+        que si vous voulez délibérément garder un coussin supplémentaire — le calcul en tient alors
+        compte, dans les deux phases de la simulation.</div>
     </div>
     <div class="field"><label>Étape 1 — part du solde orientée vers le projet ou la sécurité</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="as_proj"><span class="unit">%</span></div></div>
@@ -944,7 +962,7 @@ footer a{color:var(--dim)}
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 3.4 — 9 septembre 2026
+    Version 3.9 — 9 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -1066,9 +1084,10 @@ const DEFAUTS = {
   p_nom:'Ménage 1', p_revenu:120000, p_source:'auto', p_classe:'2', p_cadep:'1', p_enfants:2, p_age:38, p_index:2, p_infl:2, p_croiss:2,
   as_net:120000, as_cap:400, as_dep:4500, as_res:15000, as_projet:'imminent',
   bu_rev1:5000, bu_rev2:4000, bu_rev3:600, bu_logement:2200, bu_charges:400, bu_alim:800, bu_transport:400, bu_assur:250,
+  bu_engage:0,
   bu_enfants:300, bu_divers:350, bu_part1:50, bu_actif:'1',
   bu_interets:0, bu_dispo:'apres2023', bu_deduire:'1',
-  as_mois:4, as_proj:70, as_pv:35, as_av:35, as_risque:0, as_place:0, as_bascule:'1', as_an:1, as_anAchat:2, as_apport:0,
+  as_mois:4, as_filet:0, as_proj:70, as_pv:35, as_av:35, as_risque:0, as_place:0, as_bascule:'1', as_an:1, as_anAchat:2, as_apport:0,
   c_mens2:150, e_mens2:200, o_mens2:200, v_mens2:200, b_versement2:9000, l_cotis2:0,
   c_init:0, c_mens:150, c_taux:1.5, c_banques:1,
   l_cotis:2688, l_rend:1.5, l_reinv:'1',
@@ -1631,8 +1650,42 @@ function estimerRevenu(){
 function calcBudget(){
   const l = ['bu_logement','bu_charges','bu_alim','bu_transport','bu_assur','bu_enfants','bu_divers'];
   const total = l.reduce((s,k)=>s+num(k), 0);
+  const engage = num('bu_engage');
+
+  // ---- diagnostic : la somme engagée est-elle bien dimensionnée, support par support ? ----
+  const classeB = $('p_classe').value;
+  const membresB2 = (classeB==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
+  const contratsB = parseInt($('b_contrats').value,10) || 1;
+  const plB111bis = K('k_111bis') * contratsB;
+  const plB111 = K('k_111') * membresB2;
+  const uniteBausB = num('p_age') < 41 ? K('k_bausJ') : K('k_baus');
+  const plBBaus = uniteBausB * membresB2;
+
+  const compo = [
+    {nom:'111bis', val:num('b_versement'), plafond:plB111bis},
+    {nom:'Assurance-vie (prime déductible)', val:num('v_prime'), plafond:plB111},
+    {nom:'Épargne-logement', val:num('l_cotis'), plafond:plBBaus}
+  ].filter(x => x.val > 0);
+
+  let diagHTML = '';
+  if(compo.length > 0){
+    const sommeDeclaree = compo.reduce((s,x)=>s+x.val, 0);
+    diagHTML += '<div class="sect" style="margin:12px 0 6px;font-size:12.5px">Vos contrats déjà engagés, plafond par plafond</div>';
+    compo.forEach(x => {
+      let etat, coul;
+      if(x.val > x.plafond + 1){ etat='dépasse le plafond — le surplus n\'est pas déductible et reste bloqué pour rien'; coul='#f87171'; }
+      else if(x.val < x.plafond*0.9){ etat='marge disponible sous le plafond'; coul='#93a4c4'; }
+      else{ etat='plafond quasiment saturé'; coul='#4ade80'; }
+      diagHTML += '<div class="line" style="padding:3px 0"><span>'+x.nom+' — '+eur(x.val)+' / '+eur(x.plafond)+'</span>'+
+        '<span style="color:'+coul+';font-size:11.5px;text-align:right;max-width:45%">'+etat+'</span></div>';
+    });
+    if(Math.abs(sommeDeclaree - engage) > 1){
+      diagHTML += '<div class="hint" style="color:#f5a623;margin-top:6px">La somme des versements déclarés dans les rubriques ('+
+        eur(sommeDeclaree)+') ne correspond pas au montant saisi ci-dessus ('+eur(engage)+'). Ajustez l\'un des deux pour que le budget et les rubriques restent cohérents.</div>';
+    }
+  }
   const revenus = num('bu_rev1') + num('bu_rev2') + num('bu_rev3');
-  const capacite = Math.max(0, revenus - total);
+  const capacite = Math.max(0, revenus - total - engage);
   const p1 = Math.max(0, Math.min(100, num('bu_part1')));
   const actif = $('bu_actif').value==='1';
   if(actif){
@@ -1668,6 +1721,8 @@ function calcBudget(){
   $('res_bu').innerHTML =
     ligne('Revenus nets mensuels', eur(revenus)) +
     ligne('Dépenses mensuelles', eur(total)) +
+    (engage>0 ? ligne('Dont épargne déjà engagée (hors calcul)', eur(engage)) : '') +
+    diagHTML +
     ligne('Capacité d\'épargne', eur(capacite), 'big') +
     ligne('Taux d\'épargne', revenus>0 ? pct(capacite/revenus) : '—') +
     '<div class="rowsplit"></div>' +
@@ -1733,10 +1788,15 @@ function assistant(){
     notes.push(['Compte d\'épargne', effort,
       'Votre capital mobilisable ('+eur(mobilisable)+') ne couvre pas la réserve visée de '+eur(cible)+' : il manque '+eur(manque)+'. Rien d\'autre ne devrait passer avant.']);
   } else {
-    const effort = cap*0.10;
+    const effort = cap * Math.max(0, num('as_filet'))/100;
     a.epargne += effort; reste -= effort;
-    notes.push(['Compte d\'épargne', effort,
-      'Votre capital mobilisable ('+eur(mobilisable)+') couvre déjà la réserve de '+eur(cible)+'. On maintient un filet mensuel, sans plus : le rendement réel du compte d\'épargne est négatif.']);
+    if(effort > 0.5){
+      notes.push(['Compte d\'épargne', effort,
+        'Votre capital mobilisable ('+eur(mobilisable)+') couvre déjà la réserve de '+eur(cible)+'. Vous avez choisi de garder '+nf2.format(num('as_filet'))+' % de l\'effort en plus, malgré son rendement réel négatif au-delà de la réserve.']);
+    } else {
+      notes.push(['Compte d\'épargne', 0,
+        'Votre capital mobilisable ('+eur(mobilisable)+') couvre déjà la réserve de '+eur(cible)+'. Rien de plus n\'y est ajouté : au-delà de la réserve, le rendement réel du compte d\'épargne est négatif, et le reste de l\'effort est mieux employé ailleurs.']);
+    }
   }
 
   // 2 — le projet immobilier commande tout le reste
@@ -1835,12 +1895,13 @@ function assistant(){
   if(rk > 0){ k.etf += rk; rk = 0; }
 
   // ---- répartition de phase 2 : la réserve est constituée ----
-  const b2 = {epargne:cap*0.10, obligation:0, pv:0, av:0, bauspar:0, etf:0};
+  const b2 = {epargne: cap * Math.max(0, num('as_filet'))/100, obligation:0, pv:0, av:0, bauspar:0, etf:0};
   {
     // après la bascule, le projet immobilier est réalisé : plus aucune contrainte
-    // de liquidité ni de blocage à court terme. On applique les règles « sans projet ».
+    // de liquidité ni de blocage à court terme. On applique les mêmes pourcentages
+    // d'étapes 2 et 3 que la phase 1, sur ce qui reste après la réserve.
     let r2 = cap - b2.epargne;
-    const p2 = Math.min(r2, pl111bisM, cap*0.70); b2.pv += p2; r2 -= p2;
+    const p2 = Math.min(r2*partMax, pl111bisM); b2.pv += p2; r2 -= p2;
     const a2 = Math.min(r2*Math.max(0,Math.min(100,num('as_av')))/100, pl111M); b2.av += a2; r2 -= a2;
     if(r2 > 0) b2.etf += r2;
   }
