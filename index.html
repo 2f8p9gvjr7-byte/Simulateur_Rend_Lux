@@ -200,7 +200,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>Épargne · ETF · Retraite — 7 supports comparés</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 4.1 — 9 septembre 2026</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 4.3 — 9 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -248,7 +248,8 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" inputmode="numeric" id="p_enfants"><span class="unit">enf.</span></div></div>
     <div class="field"><label>Âge du plus jeune conjoint</label>
       <div class="wrap"><input type="text" inputmode="numeric" id="p_age"><span class="unit">ans</span></div></div>
-    <div class="line" style="padding:2px 0 4px"><span>Plafond assurances art. 111</span><span id="bu_pl111">—</span></div>
+    <div class="line" style="padding:2px 0 4px"><span>Plafond assurances art. 111 (brut)</span><span id="bu_pl111">—</span></div>
+    <div class="line" style="padding:0 0 4px"><span>&nbsp;&nbsp;dont dispo. pour l'assurance-vie</span><span id="bu_pl111net">—</span></div>
     <div class="line" style="padding:2px 0 10px"><span>Plafond épargne-logement</span><span id="bu_plBaus">—</span></div>
     <div class="hint" style="margin-bottom:11px">
       Les enfants ne modifient pas le barème d'imposition au Luxembourg : la modération est versée
@@ -279,8 +280,14 @@ footer a{color:var(--dim)}
       <div class="wrap"><input type="text" inputmode="decimal" id="bu_alim"><span class="unit">€</span></div></div>
     <div class="field"><label>Transports, carburant, véhicule</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="bu_transport"><span class="unit">€</span></div></div>
-    <div class="field"><label>Assurances et santé</label>
-      <div class="wrap"><input type="text" inputmode="decimal" id="bu_assur"><span class="unit">€</span></div></div>
+    <div class="field"><label>Assurance responsabilité civile</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_rc"><span class="unit">€</span></div></div>
+    <div class="field"><label>Complémentaire santé</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="bu_sante"><span class="unit">€</span></div>
+      <div class="hint">Ces deux primes partagent le même plafond de déduction que l'assurance-vie
+        de l'article 111. Séparées ici, elles permettent à l'app de calculer automatiquement ce qu'il
+        reste vraiment de marge pour l'assurance-vie, plutôt que de vous laisser l'estimer.</div>
+    </div>
     <div class="field"><label>Enfants — garde, scolarité, activités</label>
       <div class="wrap"><input type="text" inputmode="decimal" id="bu_enfants"><span class="unit">€</span></div></div>
     <div class="field"><label>Loisirs, vacances, divers</label>
@@ -537,7 +544,8 @@ footer a{color:var(--dim)}
 
     <div class="res">
       <div class="line"><span>Composition du ménage</span><span id="r_menage">—</span></div>
-      <div class="line"><span>Plafond assurances art. 111</span><span id="r_pl111">—</span></div>
+      <div class="line"><span>Plafond assurances art. 111 (brut)</span><span id="r_pl111">—</span></div>
+      <div class="line"><span>&nbsp;&nbsp;dont dispo. pour l'assurance-vie</span><span id="r_pl111net">—</span></div>
       <div class="line"><span>Plafond épargne-logement</span><span id="r_plBaus">—</span></div>
       <div class="line"><span>Plafond prévoyance 111bis</span><span id="r_pl111bis">—</span></div>
       <div class="rowsplit"></div>
@@ -976,7 +984,7 @@ footer a{color:var(--dim)}
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 4.1 — 9 septembre 2026
+    Version 4.3 — 9 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -1093,16 +1101,28 @@ const K_DEFAUTS = {
 const K_CHAMPS = Object.keys(K_DEFAUTS);
 const K = id => { const v = parseFloat(($(id).value||'').replace(',','.')); return isFinite(v)?v:K_DEFAUTS[id]; };
 
+/* Le plafond de l'article 111 est unique par membre du ménage, partagé entre l'assurance-vie,
+   la responsabilité civile, la santé et les intérêts de prêts à la consommation. Cette fonction
+   renvoie ce qu'il reste réellement disponible pour l'assurance-vie, une fois RC et santé déduites —
+   à utiliser partout où ce plafond sert de base à un calcul, jamais le plafond brut. */
+function plafond111Net(){
+  const classe = $('p_classe').value;
+  const membres = (classe==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
+  const brut = K('k_111') * membres;
+  const dejaUtilise = (num('bu_rc') + num('bu_sante')) * 12;
+  return {brut, net: Math.max(0, brut - dejaUtilise), membres, dejaUtilise};
+}
+
 const DEFAUTS = {
   duree:15, actu:2,
   p_nom:'Ménage 1', p_revenu:120000, p_source:'auto', p_classe:'2', p_cadep:'1', p_enfants:2, p_age:38, p_index:2, p_infl:2, p_croiss:2,
   as_net:120000, as_cap:400, as_dep:4500, as_res:15000, as_projet:'imminent',
-  bu_rev1:5000, bu_rev2:4000, bu_rev3:600, bu_logement:2200, bu_charges:400, bu_alim:800, bu_transport:400, bu_assur:250,
+  bu_rev1:5000, bu_rev2:4000, bu_rev3:600, bu_logement:2200, bu_charges:400, bu_alim:800, bu_transport:400, bu_rc:20, bu_sante:60,
   bu_engage:0,
   bu_enfants:300, bu_divers:350, bu_part1:50, bu_actif:'1',
   bu_interets:0, bu_dispo:'apres2023', bu_deduire:'1',
   as_mois:4, as_filet:0, as_proj:70, as_pv:35, as_av:35, as_risque:0, as_place:0, as_bascule:'1', as_an:1, as_anAchat:2, as_apport:0,
-  c_mens2:150, e_mens2:200, o_mens2:200, v_mens2:200, b_versement2:9000, l_cotis2:0,
+  c_mens2:150, e_mens2:200, o_mens2:200, v_mens2:200, b_versement2:0, l_cotis2:0,
   c_init:0, c_mens:150, c_taux:1.5, c_banques:1,
   l_cotis:0, l_rend:1.5, l_reinv:'1',
   a_init:0, a_mens:200, a_croiss:5, a_div:2, a_frais:0.3,
@@ -1269,6 +1289,8 @@ function calcProfil(){
   const uniteB = num('p_age') < 41 ? K('k_bausJ') : K('k_baus');
   $('r_menage').textContent = adultes+' adulte'+(adultes>1?'s':'')+' + '+enf+' enfant'+(enf>1?'s':'');
   $('r_pl111').textContent = eur(K('k_111')*membres)+'  ('+membres+' × '+eur(K('k_111'))+')';
+  const p111p = plafond111Net();
+  $('r_pl111net').textContent = eur(p111p.net) + (p111p.dejaUtilise>0 ? '  (− '+eur(p111p.dejaUtilise)+' RC/santé)' : '');
   $('r_plBaus').textContent = eur(uniteB*membres)+'  ('+membres+' × '+eur(uniteB)+')';
   $('r_pl111bis').textContent = eur(K('k_111bis')*adultes)+'  ('+adultes+' × '+eur(K('k_111bis'))+')';
 
@@ -1555,9 +1577,9 @@ function avCoeur(mensAnnuel, mensAnnuel2, initVal, primeAnnuelle){
 
 function calcAssuranceVie(){
   const n = +$('duree').value;
-  const membres = (PROFIL.classe==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
-  const plafond = K('k_111') * membres;
-  $('v_plafondAff').textContent = eur(plafond)+'  ('+membres+' membres)';
+  const p111 = plafond111Net();
+  const plafond = p111.net;
+  $('v_plafondAff').textContent = eur(plafond)+'  ('+eur(p111.brut)+' brut − '+eur(p111.dejaUtilise)+' RC/santé)';
   const primeSaisie = Math.min(num('v_prime'), plafond);
   const mens = num('v_mens');
 
@@ -1579,7 +1601,7 @@ function calcAssuranceVie(){
       ? '<div class="hint" style="color:#f5a623">Vos versements ne couvrent pas la prime déductible saisie ('+eur(primeSaisie)+'). La déduction est ramenée à ce que vous versez réellement : on ne peut pas déduire une prime qu\'on ne paie pas.</div>'
       : '') +
     (num('v_prime') > plafond
-      ? '<div class="hint" style="color:#f87171">Prime saisie supérieure au plafond art. 111 — seuls '+eur(plafond)+' sont déductibles, et ce plafond est partagé avec vos primes RC, santé et intérêts de prêts à la consommation.</div>'
+      ? '<div class="hint" style="color:#f87171">Prime saisie supérieure à ce qu\'il reste du plafond art. 111 une fois RC et santé déduites ('+eur(plafond)+' sur '+eur(p111.brut)+' au total) — seuls '+eur(plafond)+' sont déductibles. Ajustez les primes RC et santé dans le Budget si elles ont changé.</div>'
       : '');
 }
 
@@ -1688,7 +1710,7 @@ function estimerRevenu(){
 }
 
 function calcBudget(){
-  const l = ['bu_logement','bu_charges','bu_alim','bu_transport','bu_assur','bu_enfants','bu_divers'];
+  const l = ['bu_logement','bu_charges','bu_alim','bu_transport','bu_rc','bu_sante','bu_enfants','bu_divers'];
   const total = l.reduce((s,k)=>s+num(k), 0);
   const engage = num('bu_engage');
 
@@ -1697,7 +1719,7 @@ function calcBudget(){
   const membresB2 = (classeB==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
   const contratsB = parseInt($('b_contrats').value,10) || 1;
   const plB111bis = K('k_111bis') * contratsB;
-  const plB111 = K('k_111') * membresB2;
+  const plB111 = plafond111Net().net;
   const uniteBausB = num('p_age') < 41 ? K('k_bausJ') : K('k_baus');
   const plBBaus = uniteBausB * membresB2;
 
@@ -1753,6 +1775,8 @@ function calcBudget(){
   const membresB = (($('p_classe').value==='2') ? 2 : 1) + Math.max(0, num('p_enfants'));
   const uniteB = num('p_age') < 41 ? K('k_bausJ') : K('k_baus');
   $('bu_pl111').textContent  = eur(K('k_111')*membresB)+'  ('+membresB+' × '+eur(K('k_111'))+')';
+  const p111b = plafond111Net();
+  $('bu_pl111net').textContent = eur(p111b.net) + (p111b.dejaUtilise>0 ? '  (− '+eur(p111b.dejaUtilise)+' RC/santé)' : '');
   $('bu_plBaus').textContent = eur(uniteB*membresB)+'  ('+membresB+' × '+eur(uniteB)+')';
 
   const eff1 = num('bu_rev1')>0 ? (total*p1/100)/num('bu_rev1') : 0;
@@ -1814,7 +1838,7 @@ function assistant(){
   // mais récupérable compte comme réserve dès lors qu'on la bascule en liquide.
   const manque = Math.max(0, cible - mobilisable);
   const pl111bisM = K('k_111bis')*adultes/12;
-  const pl111M    = K('k_111')*membres/12;
+  const pl111M    = plafond111Net().net/12;
   const plBausM   = (num('p_age')<41 ? K('k_bausJ') : K('k_baus'))*membres/12;
 
   let reste = cap;
@@ -2577,8 +2601,7 @@ function diagnosticPlafonds(){
 
   // ---- Assurance-vie art. 111 ----
   {
-    const membres = (PROFIL.classe==='2' ? 2 : 1) + Math.max(0, num('p_enfants'));
-    const plafond = K('k_111') * membres;
+    const plafond = plafond111Net().net;
     const primeActuelle = Math.min(num('v_prime'), plafond);
     const marge = plafond - primeActuelle;
     if(marge > 12){
