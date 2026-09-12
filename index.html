@@ -200,7 +200,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>Épargne · ETF · Retraite — 7 supports comparés</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 4.3 — 9 septembre 2026</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 4.6 — 9 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -378,14 +378,29 @@ footer a{color:var(--dim)}
     <div class="field"><label>3. Vos dépenses courantes mensuelles <span style="color:var(--accent)">(repris du budget)</span></label>
       <div class="wrap"><input type="text" inputmode="decimal" id="as_dep"><span class="unit">€</span></div></div>
 
-    <div class="field"><label>4. Épargne déjà disponible immédiatement</label>
-      <div class="wrap"><input type="text" inputmode="decimal" id="as_res"><span class="unit">€</span></div></div>
-
-    <div class="field"><label>5. Épargne déjà placée et mobilisable</label>
-      <div class="wrap"><input type="text" inputmode="decimal" id="as_place"><span class="unit">€</span></div>
-      <div class="hint">Comptes-titres, dépôts arrivant à échéance, livrets d'appoint. N'y mettez
-        pas ce qui est immobilisé dans un 111bis, un Bauspar ou une assurance-vie en cours — ces
-        contrats ne se redéploient pas, saisissez-les directement dans leurs rubriques.</div>
+    <div class="field"><label>4. Comment se répartit votre épargne déjà constituée ?</label>
+      <div class="hint" style="margin-top:-2px">L'app ne sait pas où se trouve votre argent aujourd'hui
+        — c'est à vous de le dire, quitte à tout mettre dans une seule case. Rien de ce que vous
+        indiquez ici n'est redéployé ailleurs : cela reste exactement là où vous le placez.</div>
+    </div>
+    <div class="field"><label>&nbsp;&nbsp;Déjà sur un compte d'épargne</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_cap_ep"><span class="unit">€</span></div></div>
+    <div class="field"><label>&nbsp;&nbsp;Déjà en obligations ou dépôts à terme</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_cap_dat"><span class="unit">€</span></div>
+      <div class="hint">Un dépôt à terme est bloqué jusqu'à son échéance — le rompre avant terme coûte
+        des pénalités. Ce n'est pas une réserve mobilisable au même titre qu'un compte d'épargne,
+        même si le capital y est garanti : cette somme n'entre donc pas dans le calcul de la réserve
+        de précaution ci-dessous.</div>
+    </div>
+    <div class="field"><label>&nbsp;&nbsp;Déjà en assurance-vie</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_cap_av"><span class="unit">€</span></div></div>
+    <div class="field"><label>&nbsp;&nbsp;Déjà en ETF ou actions</label>
+      <div class="wrap"><input type="text" inputmode="decimal" id="as_cap_etf"><span class="unit">€</span></div>
+      <div class="hint">N'incluez pas ce qui est immobilisé dans un 111bis, un Bauspar ou une
+        assurance-vie déjà en cours à versements réguliers — ces contrats ne se redéploient pas.
+        Seul le compte d'épargne est retenu pour vérifier que votre réserve de précaution est
+        couverte : un dépôt à terme est bloqué jusqu'à échéance, et un capital en ETF ou en actions
+        reste soumis au risque de marché — ni l'un ni l'autre ne joue ce rôle de réserve immédiate.</div>
     </div>
 
     <div class="field"><label>6. Projet immobilier</label>
@@ -984,7 +999,7 @@ footer a{color:var(--dim)}
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 4.3 — 9 septembre 2026
+    Version 4.6 — 9 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -1116,12 +1131,12 @@ function plafond111Net(){
 const DEFAUTS = {
   duree:15, actu:2,
   p_nom:'Ménage 1', p_revenu:120000, p_source:'auto', p_classe:'2', p_cadep:'1', p_enfants:2, p_age:38, p_index:2, p_infl:2, p_croiss:2,
-  as_net:120000, as_cap:400, as_dep:4500, as_res:15000, as_projet:'imminent',
+  as_net:120000, as_cap:400, as_dep:4500, as_cap_ep:15000, as_cap_dat:0, as_cap_av:0, as_cap_etf:0, as_projet:'imminent',
   bu_rev1:5000, bu_rev2:4000, bu_rev3:600, bu_logement:2200, bu_charges:400, bu_alim:800, bu_transport:400, bu_rc:20, bu_sante:60,
   bu_engage:0,
   bu_enfants:300, bu_divers:350, bu_part1:50, bu_actif:'1',
   bu_interets:0, bu_dispo:'apres2023', bu_deduire:'1',
-  as_mois:4, as_filet:0, as_proj:70, as_pv:35, as_av:35, as_risque:0, as_place:0, as_bascule:'1', as_an:1, as_anAchat:2, as_apport:0,
+  as_mois:4, as_filet:0, as_proj:70, as_pv:35, as_av:35, as_risque:0, as_bascule:'1', as_an:1, as_anAchat:2, as_apport:0,
   c_mens2:150, e_mens2:200, o_mens2:200, v_mens2:200, b_versement2:0, l_cotis2:0,
   c_init:0, c_mens:150, c_taux:1.5, c_banques:1,
   l_cotis:0, l_rend:1.5, l_reinv:'1',
@@ -1741,9 +1756,9 @@ function calcBudget(){
       diagHTML += '<div class="line" style="padding:3px 0"><span>'+x.nom+' — '+eur(x.val)+' / '+eur(x.plafond)+'</span>'+
         '<span style="color:'+coul+';font-size:11.5px;text-align:right;max-width:45%">'+etat+'</span></div>';
     });
-    if(Math.abs(sommeDeclaree - engage) > 1){
+    if(Math.abs(sommeDeclaree - engage*12) > 12){
       diagHTML += '<div class="hint" style="color:#f5a623;margin-top:6px">La somme des versements déclarés dans les rubriques ('+
-        eur(sommeDeclaree)+') ne correspond pas au montant saisi ci-dessus ('+eur(engage)+'). Ajustez l\'un des deux pour que le budget et les rubriques restent cohérents.</div>';
+        eur(sommeDeclaree)+' par an) ne correspond pas au montant saisi ci-dessus ('+eur(engage)+' par mois, soit '+eur(engage*12)+' par an). Ajustez l\'un des deux pour que le budget et les rubriques restent cohérents.</div>';
     }
   }
   const revenus = num('bu_rev1') + num('bu_rev2') + num('bu_rev3');
@@ -1825,7 +1840,10 @@ function netVersImposable(net, classe){
 let NOTES_ASSISTANT = [];   // notes de la dernière répartition, réutilisées par le rapport
 let CASCADE = {};           // montants intermédiaires de la cascade, pour l'affichage sous les champs
 function assistant(){
-  const cap = num('as_cap'), dep = num('as_dep'), res = num('as_res');
+  const cap = num('as_cap'), dep = num('as_dep');
+  const capEp = num('as_cap_ep'), capDat = num('as_cap_dat'), capAv = num('as_cap_av'), capEtf = num('as_cap_etf');
+  const liquideReserve = capEp;   // un DAT est bloqué jusqu'à échéance, ce n'est pas une réserve mobilisable
+  const totalDejaConstitue = capEp + capDat + capAv + capEtf;
   const projet = $('as_projet').value;
   const classe = $('p_classe').value;
   const adultes = classe==='2' ? 2 : 1;
@@ -1833,7 +1851,7 @@ function assistant(){
 
   const ria = netVersImposable(num('as_net'), classe);
   const cible = dep*Math.max(0, num('as_mois'));
-  const mobilisable = res + num('as_place');
+  const mobilisable = liquideReserve;   // seule l'épargne et les DAT couvrent la réserve de précaution
   // le manque s'apprécie sur l'ensemble du capital mobilisable : une épargne placée
   // mais récupérable compte comme réserve dès lors qu'on la bascule en liquide.
   const manque = Math.max(0, cible - mobilisable);
@@ -1943,20 +1961,10 @@ function assistant(){
   }
   const anBascule = AN_BASCULE;
 
-  // ---- ventilation du capital déjà constitué ----
-  // Contrainte majeure : ni le 111bis ni l'épargne-logement n'acceptent de versement
-  // exceptionnel au-delà de leur plafond annuel. Le capital existant ne peut donc
-  // aller que vers l'épargne, les dépôts à terme, l'assurance-vie ou les titres.
-  const k = {epargne:0, obligation:0, av:0, etf:0};
-  let rk = mobilisable;
-  const socle = Math.min(rk, cible);
-  k.epargne += socle; rk -= socle;
-  if(rk > 0){
-    if(projet==='imminent'){ k.epargne += rk; rk = 0; }
-    else if(projet==='moyen'){ const d = rk*partProj; k.obligation += d; rk -= d; }
-  }
-  if(rk > 0){ const x = rk*Math.max(0,Math.min(100,num('as_av')))/100; k.av += x; rk -= x; }
-  if(rk > 0){ k.etf += rk; rk = 0; }
+  // ---- capital déjà constitué : jamais redéployé, seulement retranscrit ----
+  // L'app ne sait pas où se trouve réellement cet argent ni ce qu'un arbitrage coûterait :
+  // elle reprend telles quelles les quatre enveloppes que vous avez déclarées.
+  const k = {epargne:capEp, obligation:capDat, av:capAv, etf:capEtf};
 
   // ---- répartition de phase 2 : la réserve est constituée ----
   const b2 = {epargne: cap * Math.max(0, num('as_filet'))/100, obligation:0, pv:0, av:0, bauspar:0, etf:0};
@@ -1974,22 +1982,28 @@ function assistant(){
   const total = cap || 1;
   let html = '<div class="line"><span>Revenu imposable estimé</span><span>'+eur(ria)+'</span></div>';
   html += '<div class="line"><span>Réserve visée ('+nf2.format(num('as_mois'))+' mois)</span><span>'+eur(cible)+'</span></div>';
-  html += '<div class="line"><span>Capital mobilisable</span><span>'+eur(mobilisable)+'</span></div>';
+  html += '<div class="line"><span>Dont compte d\'épargne (seul disponible pour la réserve)</span><span>'+eur(mobilisable)+'</span></div>';
   html += '<div class="line"><span>'+(manque>0?'Reste à constituer':'Réserve déjà couverte')+'</span><span>'+(manque>0?eur(manque):'✓')+'</span></div>';
   html += '<div class="line"><span>Effort réparti</span><span>'+eur(cap)+' / mois</span></div>';
   if(AN_ACHAT > 0 && num('as_apport') > 0){
     html += '<div class="line" style="margin-bottom:8px"><span>Apport prélevé à l\'année '+AN_ACHAT+'</span><span>'+eur(num('as_apport'))+'</span></div>';
   } else { html += '<div style="margin-bottom:8px"></div>'; }
-  if(mobilisable > 0){
-    html += '<div class="sect" style="margin:14px 0 6px;font-size:13px">Capital déjà constitué — '+eur(mobilisable)+'</div>';
-    html += '<table><thead><tr><th>Support</th><th>Montant</th></tr></thead><tbody>';
-    const libK = {epargne:'Compte d\'épargne', obligation:'Dépôts à terme', av:'Assurance-vie', etf:'ETF capitalisant'};
+  if(totalDejaConstitue > 0){
+    html += '<div class="sect" style="margin:14px 0 6px;font-size:13px">Ce que vous avez déclaré — '+eur(totalDejaConstitue)+'</div>';
+    html += '<table><thead><tr><th>Support</th><th>Montant déclaré</th></tr></thead><tbody>';
+    const libK = {epargne:'Compte d\'épargne', obligation:'Obligations / DAT', av:'Assurance-vie', etf:'ETF ou actions'};
     Object.entries(k).forEach(([key,v])=>{
       if(v < 1) return;
       html += '<tr><td>'+libK[key]+'</td><td class="num">'+eur(v)+'</td></tr>';
     });
     html += '</tbody></table>';
-    html += '<div class="hint" style="margin-top:8px">Le socle de '+eur(Math.min(mobilisable,cible))+' reste liquide : c\'est votre réserve. Le reste suit la même logique que les versements. Ni le 111bis ni l\'épargne-logement n\'apparaissent ici — ils n\'acceptent aucun versement exceptionnel au-delà de leur plafond annuel. Revendre des titres pour les redéployer ne coûte rien fiscalement au Luxembourg dès lors qu\'ils sont détenus depuis plus de six mois.</div>';
+    html += '<div class="hint" style="margin-top:8px">Cet argent reste exactement où vous l\'avez '+
+      'indiqué : l\'app ne le déplace pas et n\'invente aucune répartition. Seuls '+eur(liquideReserve)+
+      ' (compte d\'épargne) comptent pour vérifier que votre réserve de précaution '+
+      'est couverte — un dépôt à terme reste bloqué jusqu\'à échéance, et un capital déjà en ETF ou '+
+      'en actions reste exposé au marché : ni l\'un ni l\'autre ne joue ce rôle de réserve immédiate. '+
+      'Si vous décidez vous-même de réorganiser cet argent, modifiez directement le capital '+
+      'initial de la rubrique concernée.</div>';
     html += '<div class="sect" style="margin:16px 0 6px;font-size:13px">Versements mensuels</div>';
   }
   html += '<table><thead><tr><th>Support</th><th>€/mois</th><th>Part</th></tr></thead><tbody>';
@@ -2178,8 +2192,9 @@ function buildRapportContenu(){
   const enfants = Math.max(0, num('p_enfants'));
   const age = num('p_age');
   const revenuNet = num('as_net');
-  const dispoImm = num('as_res') || 0;
-  const place = num('as_place');
+  const capEpR = num('as_cap_ep'), capDatR = num('as_cap_dat'), capAvR = num('as_cap_av'), capEtfR = num('as_cap_etf');
+  const dispoImm = capEpR + capDatR;
+  const place = capAvR + capEtfR;
   const risque = Math.max(0, Math.min(100, num('as_risque')));
   const projetCode = $('as_projet').value;
   const anAchat = num('as_anAchat');
@@ -2217,8 +2232,8 @@ function buildRapportContenu(){
       (apport>0 ? ', avec un apport d\'environ ' + eur(apport) + ' prélevé sur votre épargne à ce moment-là.' : '.');
   }
 
-  const phraseLiquide = 'Vous disposez aujourd\'hui de ' + eur(dispoImm) + ' de liquidités immédiates' +
-    (place>0 ? ', et de ' + eur(place) + ' supplémentaires déjà placés et mobilisables si nécessaire.' : '.');
+  const phraseLiquide = 'Vous disposez aujourd\'hui de ' + eur(dispoImm) + ' en épargne ou dépôts à capital garanti' +
+    (place>0 ? ', et de ' + eur(place) + ' supplémentaires déjà en assurance-vie ou en titres, exposés au marché pour cette dernière part.' : '.');
 
   const phraseRisque = 'Sur la part de votre épargne consacrée à ce projet, vous situez votre tolérance ' +
     'au risque à ' + risque + '\u00a0% \u2014 c\'est-à-dire que ' + risque +
