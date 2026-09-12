@@ -200,7 +200,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>Épargne · ETF · Retraite — 7 supports comparés</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 4.12 — 9 septembre 2026</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 4.13 — 9 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -1009,7 +1009,7 @@ footer a{color:var(--dim)}
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 4.12 — 9 septembre 2026
+    Version 4.13 — 9 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -2905,6 +2905,36 @@ $('bu_reporter').addEventListener('click', ()=>{
   if(av > 0){ $('v_prime').value = Math.round(av); $('v_mens').value = Math.round(av/12); $('v_mens2').value = Math.round(av/12); }
   if(baus > 0){ $('l_cotis').value = Math.round(baus); $('l_cotis2').value = Math.round(baus); }
   calcAll();
+
+  // confirmation visible : le bouton change d'apparence quelques secondes
+  const btn = $('bu_reporter');
+  const texteInitial = btn.textContent;
+  const rienAReporter = (pv<=0 && av<=0 && baus<=0);
+  btn.textContent = rienAReporter ? '— Aucun montant à reporter (les trois champs sont à 0) —' : '✓ Reporté dans les rubriques 111bis / assurance-vie / épargne-logement';
+  btn.style.background = rienAReporter ? 'transparent' : 'var(--accent)';
+  btn.style.color = rienAReporter ? 'var(--dim)' : '#141d33';
+  btn.style.fontWeight = '800';
+  clearTimeout(btn._timeoutReport);
+  btn._timeoutReport = setTimeout(()=>{
+    btn.textContent = texteInitial;
+    btn.style.background = 'transparent';
+    btn.style.color = 'var(--accent)';
+  }, 2200);
+
+  // et on descend visuellement jusqu'aux cartes concernées pour voir le changement
+  const premiereCible = pv>0 ? 'card-pv' : (av>0 ? 'card-av' : (baus>0 ? 'card-bauspar' : null));
+  if(premiereCible){
+    const cible = document.getElementById(premiereCible);
+    if(cible){
+      cible.scrollIntoView({behavior:'smooth', block:'start'});
+      cible.animate(
+        [{boxShadow:'0 0 0 0 rgba(245,166,35,0)'},
+         {boxShadow:'0 0 0 3px rgba(245,166,35,.85)'},
+         {boxShadow:'0 0 0 0 rgba(245,166,35,0)'}],
+        {duration:1400, easing:'ease-out'}
+      );
+    }
+  }
 });
 $('as_apply').addEventListener('click', appliquerAssistant);
 $('btnCourant').addEventListener('click', ()=>setMode(false));
