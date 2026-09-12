@@ -200,7 +200,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>Épargne · ETF · Retraite — 7 supports comparés</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 4.8 — 9 septembre 2026</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 4.12 — 9 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -1009,7 +1009,7 @@ footer a{color:var(--dim)}
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 4.8 — 9 septembre 2026
+    Version 4.12 — 9 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -2101,16 +2101,16 @@ function appliquerAssistant(){
   $('c_mens').value = Math.round(a.epargne);
   $('o_mens').value = Math.round(a.obligation);
   $('e_mens').value = Math.round(a.etf);
-  $('v_mens').value = Math.round(a.av);
+  $('v_mens').value = Math.round(a.av + num('bu_eng_av')/12);
   $('a_mens').value = 0;
-  $('b_versement').value = Math.round(a.pv*12);
-  $('l_cotis').value = Math.round(a.bauspar*12);
+  $('b_versement').value = Math.round(a.pv*12) + num('bu_eng_pv');
+  $('l_cotis').value = Math.round(a.bauspar*12) + num('bu_eng_baus');
   $('c_mens2').value = Math.round(b2.epargne);
   $('o_mens2').value = Math.round(b2.obligation);
   $('e_mens2').value = Math.round(b2.etf);
-  $('v_mens2').value = Math.round(b2.av);
-  $('b_versement2').value = Math.round(b2.pv*12);
-  $('l_cotis2').value = Math.round(b2.bauspar*12);
+  $('v_mens2').value = Math.round(b2.av + num('bu_eng_av')/12);
+  $('b_versement2').value = Math.round(b2.pv*12) + num('bu_eng_pv');
+  $('l_cotis2').value = Math.round(b2.bauspar*12) + num('bu_eng_baus');
   calcAll();
   $('card-assistant').scrollIntoView({behavior:'smooth', block:'start'});
 }
@@ -2901,9 +2901,9 @@ $('rapportBtn').addEventListener('click', ()=>{
 });
 $('bu_reporter').addEventListener('click', ()=>{
   const pv = num('bu_eng_pv'), av = num('bu_eng_av'), baus = num('bu_eng_baus');
-  if(pv > 0) $('b_versement').value = Math.round(pv);
-  if(av > 0) $('v_prime').value = Math.round(av);
-  if(baus > 0) $('l_cotis').value = Math.round(baus);
+  if(pv > 0){ $('b_versement').value = Math.round(pv); $('b_versement2').value = Math.round(pv); }
+  if(av > 0){ $('v_prime').value = Math.round(av); $('v_mens').value = Math.round(av/12); $('v_mens2').value = Math.round(av/12); }
+  if(baus > 0){ $('l_cotis').value = Math.round(baus); $('l_cotis2').value = Math.round(baus); }
   calcAll();
 });
 $('as_apply').addEventListener('click', appliquerAssistant);
