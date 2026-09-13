@@ -259,7 +259,7 @@ footer a{color:var(--dim)}
     <div style="flex:1;min-width:0">
       <h1>Comparateur <span style="font-size:14px;vertical-align:middle">🇱🇺</span></h1>
       <p>Épargne · ETF · Retraite — 7 supports comparés</p>
-      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 5.9 — 9 septembre 2026</p>
+      <p style="margin:1px 0 0;font-size:11px;color:#6f83a6">Version 5.10 — 9 septembre 2026</p>
     </div>
     <span class="off" id="offBadge">hors ligne</span>
   </div>
@@ -1083,7 +1083,7 @@ footer a{color:var(--dim)}
 
 <footer>
   <p style="margin:0 0 10px;font-size:12.5px;color:var(--accent);font-weight:700">
-    Version 5.9 — 9 septembre 2026
+    Version 5.10 — 9 septembre 2026
   </p>
   <b>Estimation pédagogique — ne remplace pas un conseil fiscal.</b> Le calcul applique le barème 2026
   à 23 tranches publié par l'Administration des contributions directes ; les seuils peuvent faire
@@ -2999,7 +2999,8 @@ function construireTrajectoire(){
   const tauxRemp = Math.max(0, num('traj_taux'))/100;
   const infl = num('p_infl')/100;
   const netActuel = num('as_net');
-  const depensesActuelles = num('as_dep')*12;
+  const depensesTotales = num('as_dep')*12;
+  const depensesHorsLogement = Math.max(0, depensesTotales - num('bu_logement')*12);
   const anneesAvantRetraite = ageRetraite - ageActuel;
 
   function revenuNetAnnee(i){
@@ -3019,15 +3020,18 @@ function construireTrajectoire(){
   for(let i=1; i<=n; i+=pas) annees.push(i);
   if(annees[annees.length-1] !== n) annees.push(n);
 
-  let html = '<table><thead><tr><th>Année</th><th>Âge</th><th>Revenu net</th><th>Dépenses</th>'+
+  let html = '<table><thead><tr><th>Année</th><th>Âge</th><th>Revenu net</th>'+
+    '<th>'+(PRET_SCHEDULE ? 'Dépenses hors logement' : 'Dépenses')+'</th>'+
     (PRET_SCHEDULE ? '<th>Mensualité prêt</th>' : '')+'<th>Ressource nette</th></tr></thead><tbody>';
 
   let retraiteFaite = false;
   annees.forEach(i=>{
     const age = ageActuel + i - 1;
     const rev = revenuNetAnnee(i);
-    const dep = depensesActuelles * Math.pow(1+infl, i-1);
     const mens = mensualitePretAnnee(i);
+    const dep = PRET_SCHEDULE
+      ? depensesHorsLogement * Math.pow(1+infl, i-1)
+      : depensesTotales * Math.pow(1+infl, i-1);
     const ressource = rev - dep - (mens||0);
     const estRetraite = anneesAvantRetraite>0 && !retraiteFaite && i >= anneesAvantRetraite+1;
     if(estRetraite) retraiteFaite = true;
